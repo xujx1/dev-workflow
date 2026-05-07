@@ -9,7 +9,7 @@
 在 Claude Code 中执行：
 
 ```bash
-/plugin marketplace add https://github.com/xujx1/dev-workflow
+git clone git@github.com:xujx1/dev-workflow.git ~/.claude/plugins/marketplaces/dev-workflow
 ```
 
 安装完成后，将命令文件复制到 Claude Code 命令目录（IDEA 插件用户必须执行）：
