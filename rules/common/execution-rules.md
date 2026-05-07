@@ -250,125 +250,6 @@ git commit -m "chore: 归档 {需求名称}（迭代{iteration_no}）
 
 ---
 
-## biz-knowledge-agent 执行规则
-
-### 核心原则
-
-#### 消费者分离原则
-
-| 文档 | 硬约束 |
-|------|--------|
-| B1a `business-flow.md` | **禁止**出现服务名、API、表名、类名；纯业务视角 |
-| B1b `system-flow.md` | **必须**包含服务名、状态枚举、调用方式、代码入口 |
-| B1c `data-flow.md` | **必须**标注每张表的数据库归属；**必须**标注跨库边界 |
-
-#### 渐进式加载原则
-
-- 每层先生成 `_index.md`，其他文档从索引按需链接
-- 索引文件 <=80 行，子文档 <=200 行
-
-### 步骤详情
-
-#### 步骤 1：参数校验与初始化
-
-- 确认业务域名称（必须项）
-- 确定输出目录和域目录
-- 判断可生成层（根据可用信息决定）：
-  - 无：B0 关键词骨架
-  - 飞书文档：B0 + B2 SOP
-  - 工程代码：B1b 系统流程 + B1c 数据流
-  - 飞书 + 代码：全部四层
-
-#### 步骤 2：断点续传 / MRD 增量更新
-
-- 扫描已生成文件，已存在则跳过
-- MRD 增量模式：只重新生成 MRD 涉及子域，其他保持不动
-
-#### 步骤 3：读取知识来源（并行）
-
-**代码来源**：
-- 读取 `CONTEXT.md`、`api-index.md`
-- `grep -r "enum.*Status"` → B1b 状态机
-- `grep -r "@RabbitListener\|@KafkaListener"` → B1b MQ
-- `grep -r "@FeignClient"` → B1b 调用链
-- 搜索 Mapper/Repository → B1c
-
-**飞书来源**：读取飞书文档内容 → B0/B2
-
-**子域 > 5 时启用 Sub Agent 并行处理（每 5 个一批）。**
-
-#### 步骤 3.1：Sub Agent 并行处理
-
-```
-Sub Agent Prompt 模板：
-你是业务知识库生成器。任务：为以下子域生成业务知识库
-输入：业务域名、子域列表、工程名称、输出目录、飞书文档
-执行步骤4至步骤8，严格遵守消费者分离原则（B1a禁止技术词汇）。
-```
-
-#### 步骤 4：P0 — 平台操作拓扑（有飞书文档时）
-
-文件：`platforms/_index.md` + `platforms/{platform}.md`
-
-操作入口表（6列）：`菜单路径 | 操作 | 功能CODE | API URL | 后端应用 | Controller 入口`
-
-#### 步骤 5：B0 — 业务关键词（始终生成）
-
-- `keywords/_index.md`（总索引）
-- `keywords/{domain}-domain.md`（每词含：定义/同义词/反义词/上下文/代码映射/关系）
-- `keywords/update/glossary.md`（待审新术语）
-
-#### 步骤 6：B1 — 业务流程（三子层）
-
-**处理顺序：B1b → B1c → B1a（代码先行，业务后抽象）**
-
-**步骤 6.1**：生成路由表 `{sub-domain}/flow-matrix.md`（环节字典 + 场景路由矩阵）
-
-**步骤 6.2**：生成环节原子文档 `steps/{step-name}.md`（业务定义+变体+输入输出+角色+系统实现）
-
-**步骤 6.3**：生成场景三子层：
-- **B1b** `scenarios/{name}/system-flow.md`：服务调用链+状态机+MQ+配置项+异常处理，**必须**标注代码位置 `类名:行号`
-- **B1c** `scenarios/{name}/data-flow.md`：ER图+实体清单+数据流向+跨库边界，**必须**标注 datasource 归属
-- **B1a** `scenarios/{name}/business-flow.md`：从 B1b 抽象，**零技术词汇**，包含角色/流程/异常/关联 SOP。生成后添加审核提示
-
-#### 步骤 7：B2 — 实操 SOP（有飞书文档时）
-
-文件：`{sub-domain}/sop/{sop-name}.md`，包含 SOW 部分 + 操作步骤 + 决策流程 + 检查清单 + 回滚方案
-
-类型标注：`业务操作`（运营/客服）或 `技术操作`（开发/DBA/运维）
-
-#### 步骤 8：生成域索引
-
-`{domain}/_index.md`（域导航：子域列表 + 相关服务 + 关联平台入口 + 关键词链接）
-
-#### 步骤 8.5：生成 prd-context（有 B1a 内容时必须执行）
-
-输出：`prd-context/{NN}_{sub-domain}.md`（每子域一文件）
-
-**内容结构**：业务定义 + 核心业务流程 + 关键业务规则 + 当前状态说明 + 异常分支 + 相关 SOP
-
-**零技术词汇约束（强制）**：禁止类名/方法名/枚举值/`*.java:行号`/@注解/表名/API URL
-
-#### 步骤 9：生成汇总报告
-
-输出：各层文件数量统计 + 待人工审核清单 + 跳过文件 + 未生成原因
-
-### 执行模式
-
-#### `mode=full`（默认）
-
-完整生成 P0 → B0 → B1(a/b/c) → B2 → prd-context
-
-#### `mode=lite`（快速）
-
-只生成 `prd-context/`：
-- `prd-context/_index.md`（<=80 行）
-- `prd-context/{NN}_{sub-domain}.md`（<=100 行/文件）
-
-跳过：P0/B0/B1/B2，断点续传简化为「存在则跳过」。
-
----
-
 ## code-gen-agent 执行规则
 
 ### 步骤 0：飞书同步检查（强制）
@@ -776,56 +657,10 @@ prompt: |
   - 单次追加内容不超过 100 行
 ```
 
-#### 子 Agent 2：biz-kb-update-agent
 
-> 前置检查：`{kb_local_path}/biz-knowledge/` 不存在时跳过，报告标注 `[已跳过 - 知识库未创建]`。
+### Step 4-2-C：等待子 Agent 完成
 
-```
-subagent_type: general-purpose
-run_in_background: true
-model: sonnet
-
-prompt: |
-  你是业务知识库增量更新器。
-  前置检查：{kb_local_path}/biz-knowledge/ 不存在则跳过并报告。
-
-  根据变更类型追加更新：
-  | 变更类型 | 更新内容 |
-  |---------|---------|
-  | 新增业务规则 | 追加到 biz-knowledge/rules/{领域}.md |
-  | 修改业务流程 | 更新 biz-knowledge/flows/{流程名}.md |
-  | 新增领域概念 | 追加到 biz-knowledge/glossary.md |
-
-  约束：核对 archive_code_ref 确认规则已落地为代码真实行为。
-```
-
-#### 子 Agent 3：testcase-kb-update-agent
-
-> 前置检查：`{kb_local_path}/test-knowledge/` 不存在时跳过，报告标注 `[已跳过 - 知识库未创建]`。
-
-```
-subagent_type: general-purpose
-run_in_background: true
-model: sonnet
-
-prompt: |
-  你是测试用例知识库增量更新器。
-  前置检查：{kb_local_path}/test-knowledge/ 不存在则跳过并报告。
-
-  根据变更类型更新 modules/ 下对应文档；
-  若 test_spec 存在，将新增测试场景摘要合并到对应知识库文档。
-  约束：最终知识库必须核对 archive_code_ref 对应实现，避免场景脱节。
-
-  Token 保护硬约束（违反视为执行错误）：
-  - 禁止全量 Read modules/ 下任何现有知识库文件
-  - 只允许用 Glob 列出文件列表 + Read 目标文件的前 80 行（offset=0, limit=80）确认结构后，使用 Edit 追加增量内容
-  - 若需要确认现有章节结构，使用 Grep 搜索关键词，不得全量读取
-  - 单次追加内容不超过 150 行；超出时拆分为多次 Edit 追加
-```
-
-### Step 4-2-C：等待所有子 Agent 完成
-
-轮询三个子 Agent 状态，展示进度。某个 Agent 失败不阻塞其余 Agent。
+等待子 Agent 状态，展示进度。
 
 ### Step 4-2-D：完成性校验
 
@@ -833,7 +668,6 @@ prompt: |
 |--------|---------|
 | C1 变更类型全覆盖 | 每个变更类型对应文档是否已更新 |
 | C2 新接口同步 | 02_架构与设计层.md 是否已更新接口签名 |
-| C3 test_spec 对齐 | test_spec 存在时 testcase-kb 是否同步 |
 
 校验不通过时标注 `[待补充]`，不阻塞后续。
 
@@ -857,9 +691,7 @@ prompt: |
 
 ```
 应用知识库：{N} 个文档已更新
-业务知识库：[完成 / 已跳过]
-测试知识库：[完成 / 已跳过]
-完成性校验：C1/C2/C3 [通过 / 待补充]
+完成性校验：C1/C2 [通过 / 待补充]
 ```
 
 返回 `kb_updated: true` + 更新文件列表 + `kb_freshness_path`。
@@ -1169,131 +1001,3 @@ Skill autoresearch "{调研主题}" → 返回结构化调研报告
 
 ---
 
-## test-knowledge-agent 执行规则
-
-### Mode: biz — 业务模块测试知识库
-
-#### Step 1：参数校验
-- 工程根目录 + 分支 必须提供
-- 检查是否有飞书文档链接，决定执行模式（飞书驱动 / 代码驱动）
-
-#### Step 2（飞书驱动模式）：获取飞书文档（强卡条件）
-```
-调用 mcp__front_feishu__feishu_get_doc_content 获取飞书文档
-失败 → 立即停止，提示用户三种选项：
-  ① 提供正确链接 ② 粘贴文档内容 ③ 切换代码驱动模式
-```
-
-#### Step 3：分析代码结构
-- 扫描 Controller、Dubbo Service、MQ Consumer、Entity/DO、Enum
-- 飞书驱动：按文档业务模块在代码中定位实现
-- 代码驱动：按包结构自动识别业务域
-
-#### Step 4：读取应用知识库（可选）
-- 若 `app-knowledge-base/CONTEXT.md` 存在，读取补充背景（<=200 行）
-
-#### Step 5：生成业务模块测试知识库
-
-每个模块输出 `{模块名}-测试知识库.md`，包含 11 章节：
-1. 业务背景与名词解释
-2. 业务流程（链路梳理 + 详细流程）
-3. 接口清单（Dubbo + HTTP）
-4. 数据模型（入参/出参/DB表/状态枚举）
-5. 消息队列（Topic/Tag/生产者/消费者/触发时机）
-6. 业务测试场景层（Happy Path / Error Path / Edge Case）
-7. 核心流程验证层（状态机 / 时序交互）
-8. 测试工程与规范层（覆盖率要求 / 代码规范）
-9. 质量保障与运维层
-10. 资损风险点
-11. 测试实施清单
-
-**lite 模式**（5 章，<=80 行/文件）：业务背景 + 主要场景 + 核心流程节点 + 质量保障要点 + 资损风险
-
-#### Step 6：生成索引文件
-输出 `app-knowledge-base/test-knowledge/modules/README.md`
-
----
-
-### Mode: api — 接口测试用例知识库
-
-> **一接口一文档**：每个接口文档生成一个独立 `_testcase.md`，禁止合并。
-
-#### Step 1：断点续传
-- 扫描 `app-knowledge-base/test-knowledge/api-testcase/` 已有 `*_testcase.md`
-- 已存在的接口跳过（除非明确要求重新生成）
-
-#### Step 2：读取接口索引
-- 优先读取 `app-knowledge-base/api-index.md`
-- 统计接口数量，决定处理策略
-
-#### Step 3：批量策略
-- **<= 10 个接口**：顺序处理
-- **> 10 个接口**：每批 10 个，并行启动 Sub Agent
-
-Sub Agent Prompt 核心要素：
-1. 工程名称 + 分支
-2. 本批次接口列表
-3. api-docs 目录路径
-4. 输出目录（`app-knowledge-base/test-knowledge/api-testcase/`，强制）
-5. 一接口一文档原则（强制重申）
-
-#### Step 4：逐接口代码分析
-- 定位 Controller（按路径搜索 `@RequestMapping` 等注解）
-- 追踪 Service → Mapper 层
-- 分析：参数处理、业务分支、外部依赖、配置项、幂等控制
-
-#### Step 5：生成接口测试用例知识库（每接口一文档）
-
-文件名：`{编号}_{接口标识}_testcase.md`，包含 10 模块：
-1. 接口概述（类型/QPS/RT/说明/调用方）
-2. 请求参数（字段/DTO/校验规则）
-3. 业务逻辑流程（ASCII 调用链）
-4. 测试用例设计（仅列实际存在的场景，禁止编造）
-5. 测试数据准备（正常/错误示例/DB 要求）
-6. 验证点汇总（响应/DB写/MQ/日志）
-7. 关键代码路径（file:line）
-8. 配置项说明
-9. 注意事项
-10. 测试用例统计
-
----
-
-### Mode: all — 并行执行 biz + api
-
-```
-并行启动：
-  ├─ [Task] test-knowledge-agent mode=biz
-  └─ [Task] test-knowledge-agent mode=api
-
-等待两者完成后，输出汇总：
-  biz 知识库：{N} 个业务模块文档
-  api 知识库：{N} 个接口文档
-```
-
----
-
-### 错误处理
-
-| 情况 | 处理方式 |
-|------|----------|
-| 飞书文档获取失败 | 立即阻断，提示三种处理选项 |
-| api-index.md 不存在 | 提示先运行 app-knowledge-agent |
-| 工程目录不存在 | 停止报错退出 |
-| 接口代码无法定位 | 跳过并记录，继续处理其他接口 |
-
-### 输出摘要格式
-
-```
-测试知识库生成完成
-
-业务模块知识库（biz）：
-  路径：app-knowledge-base/test-knowledge/modules/
-  文档：{N} 个模块
-
-接口测试用例知识库（api）：
-  路径：app-knowledge-base/test-knowledge/api-testcase/
-  文档：{N} 个接口
-
-下一步：生成 test_spec（入口4）
-  需要：tech-design 路径 + feature_dir
-```

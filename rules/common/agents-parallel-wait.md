@@ -53,8 +53,6 @@
 | Agent | 状态 | 预期产出 | 启动时间 |
 |-------|------|---------|---------|
 | app-knowledge-agent | 🔄 已派发 | app-knowledge-base/CONTEXT.md | {datetime} |
-| biz-knowledge-agent | 🔄 已派发 | app-knowledge-base/biz-knowledge/prd-context/_index.md | {datetime} |
-| test-knowledge-agent | 🔄 已派发 | app-knowledge-base/test-knowledge/modules/README.md | {datetime} |
 ```
 
 Agent 返回后将对应行状态更新为 `✅ 已完成` 或 `❌ 失败`。

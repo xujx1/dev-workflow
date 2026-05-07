@@ -26,7 +26,7 @@ git diff {ai_commit_hash}^ {archive_code_ref} --name-only | head -100
 
 若最终代码与技术方案不一致，以最终代码为准，并在知识库中补充"最终实现差异"摘要。
 
-## Step 4-2-B：并行启动三个子 Agent
+## Step 4-2-B：并行启动子 Agent
 
 **在单条消息中同时发起所有子 Agent（`run_in_background: true`），不等待任何一个完成。**
 
@@ -62,56 +62,9 @@ prompt: |
   - 单次追加内容不超过 100 行
 ```
 
-### 子 Agent 2：biz-kb-update-agent
+## Step 4-2-C：等待子 Agent 完成
 
-> 前置检查：`{kb_local_path}/biz-knowledge/` 不存在时跳过，报告标注 `[已跳过 - 知识库未创建]`。
-
-```
-subagent_type: general-purpose
-run_in_background: true
-model: sonnet
-
-prompt: |
-  你是业务知识库增量更新器。
-  前置检查：{kb_local_path}/biz-knowledge/ 不存在则跳过并报告。
-
-  根据变更类型追加更新：
-  | 变更类型 | 更新内容 |
-  |---------|---------|
-  | 新增业务规则 | 追加到 biz-knowledge/rules/{领域}.md |
-  | 修改业务流程 | 更新 biz-knowledge/flows/{流程名}.md |
-  | 新增领域概念 | 追加到 biz-knowledge/glossary.md |
-
-  约束：核对 archive_code_ref 确认规则已落地为代码真实行为。
-```
-
-### 子 Agent 3：testcase-kb-update-agent
-
-> 前置检查：`{kb_local_path}/test-knowledge/` 不存在时跳过，报告标注 `[已跳过 - 知识库未创建]`。
-
-```
-subagent_type: general-purpose
-run_in_background: true
-model: sonnet
-
-prompt: |
-  你是测试用例知识库增量更新器。
-  前置检查：{kb_local_path}/test-knowledge/ 不存在则跳过并报告。
-
-  根据变更类型更新 modules/ 下对应文档；
-  若 test_spec 存在，将新增测试场景摘要合并到对应知识库文档。
-  约束：最终知识库必须核对 archive_code_ref 对应实现，避免场景脱节。
-
-  ⚠️ Token 保护硬约束（违反视为执行错误）：
-  - 禁止全量 Read modules/ 下任何现有知识库文件
-  - 只允许用 Glob 列出文件列表 + Read 目标文件的前 80 行（offset=0, limit=80）确认结构后，使用 Edit 追加增量内容
-  - 若需要确认现有章节结构，使用 Grep 搜索关键词，不得全量读取
-  - 单次追加内容不超过 150 行；超出时拆分为多次 Edit 追加
-```
-
-## Step 4-2-C：等待所有子 Agent 完成
-
-轮询三个子 Agent 状态，展示进度。某个 Agent 失败不阻塞其余 Agent。
+等待子 Agent 状态，展示进度。
 
 ## Step 4-2-D：完成性校验
 
@@ -119,7 +72,6 @@ prompt: |
 |--------|---------|
 | C1 变更类型全覆盖 | 每个变更类型对应文档是否已更新 |
 | C2 新接口同步 | 02_架构与设计层.md 是否已更新接口签名 |
-| C3 test_spec 对齐 | test_spec 存在时 testcase-kb 是否同步 |
 
 校验不通过时标注 `[待补充]`，不阻塞后续。
 
@@ -143,9 +95,7 @@ prompt: |
 
 ```
 应用知识库：{N} 个文档已更新
-业务知识库：[✅ 完成 / ⏭️ 已跳过]
-测试知识库：[✅ 完成 / ⏭️ 已跳过]
-完成性校验：C1/C2/C3 [通过 / 待补充]
+完成性校验：C1/C2 [通过 / 待补充]
 ```
 
 返回 `kb_updated: true` + 更新文件列表 + `kb_freshness_path`。

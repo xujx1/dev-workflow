@@ -20,11 +20,9 @@ argument-hint: [应用名 | 留空自动识别]
 
 ## 说明
 
-构建三类知识库：
+构建知识库：
 
 - `app-knowledge-base/` — 架构、接口、流程、工程规范
-- `biz-knowledge-base/` — 业务规则、领域词汇表
-- `testcase-knowledge-base/` — 接口测试用例、场景、边界数据
 
 ## 调用方式
 
@@ -39,8 +37,6 @@ argument-hint: [应用名 | 留空自动识别]
 | 步骤编号 | 步骤名称 |
 |---------|---------|
 | S1 | app-knowledge-base 构建 |
-| S2 | biz-knowledge-base 构建 |
-| S3 | testcase-knowledge-base 构建 |
 | S4 | 交叉校验与一致性检查 |
 
 报表子章节：`### /01-knowledge-base 耗时报表`。

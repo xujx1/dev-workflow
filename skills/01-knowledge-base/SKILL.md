@@ -48,19 +48,6 @@ user-invocable: true
    ├─ [pre-check] 读取 mode 参数（默认 mode=lite），配置文件自愈 + 读取 plugin_availability（静默）
    │     mode=nano → 只 spawn app-knowledge-agent，产出 2 文件
    │     mode=lite → spawn app-knowledge-agent，产出 ~8 文件
-   │     ⚠️ test-knowledge-agent 默认不 spawn；仅用户显式说「生成测试知识库」时才触发
-   │
-   ├─ [Step 0] 旧结构知识库检测（⚠️ 仅检测不删除，记录旧目录列表供 Step 2 使用）
-   │     检测 {工程根}/app-knowledge-base/ 下是否存在以下旧结构目录：
-   │       - api-docs/       （旧版 API 文档，已由 autoresearch 替代）
-   │       - api-testcase/   （旧版接口测试用例，已由 tdd-spec 直接读代码替代）
-   │       - biz-knowledge/  （旧版业务知识库，已整合进 01_业务与领域知识层.md）
-   │       - test-knowledge/ （旧版测试知识库，已由 tdd-spec 按需生成替代）
-   │     │
-   │     ├── 【未检测到旧目录】→ 静默跳过，继续 Step 0.5
-   │     │
-   │     └── 【检测到旧目录】→ 记录旧目录列表到临时变量，静默继续 Step 0.5
-   │           ⚠️ 不在此步骤删除，确保 Step 1 新知识库生成成功后再清理
    │
    ├─ [Step 0.5] 知识库完整性检测（静默，不询问用户，不输出任何提示）
    │     ├── KB_INDEX.md / CONTEXT.md / api-index.md / component-index.md 任一缺失
@@ -72,8 +59,6 @@ user-invocable: true
    │
    ├─ [Step 1] 以 Task 工具 spawn 子 Agent（按 mode 参数决定数量）
    │     └─ app-knowledge-agent   → app-knowledge-base/（代码扫描，mode=nano/lite 均执行）
-   │          ⚠️ api-docs/ 和 api-testcase/ 默认不生成；按需用 autoresearch 实时查代码
-   │          ⚠️ test-knowledge-agent 默认不触发；显式请求时才 spawn（mode=biz）
    │
    │     ⚠️ **Task prompt 构造模板（硬约束，违反即 "Prompt is too long"）**：
    │     每个 agent 的 Task prompt 只允许包含以下内容，禁止任何其他文本：
@@ -82,50 +67,14 @@ user-invocable: true
    │     branch={分支名}
    │     mode={nano|lite|biz|api}
    │     kb_output_path={知识库输出绝对路径}
-   │     feishu_url={飞书文档URL}                    # 仅 biz-knowledge-agent（可选）
    │     config_path={.mrd-to-code-config.json 绝对路径}
    │     ```
    │     禁止项：❌ 内联 CONTEXT.md 内容  ❌ 内联 api-index.md 内容
    │             ❌ 内联代码扫描结果  ❌ 内联飞书文档全文
    │
-   │     ⚠️ **旧目录禁止生成（必须追加在每个 agent Task prompt 末尾）**：
-   │     ```
-   │     ⛔ 禁止生成以下旧结构目录（v4.0.0 已移除，写入即任务失败）：
-   │     api-docs/  api-testcase/  biz-knowledge/  test-knowledge/
-   │     ```
-   │
    ├─ [Step 2] 严格阻塞等待子 Agent 全部返回，记录完成状态
    │     └── 确认 KB_INDEX.md + CONTEXT.md + component-index.md 已落盘
    │          任一失败 → 记录原因，继续推进（不阻塞 Step 3/4）
-   │
-   ├─ [Step 2.5] 旧目录清理（Step 0 检测到旧目录时执行）
-   │     前置条件：Step 2 子 Agent 全部成功返回
-   │     ├── 成功 → 输出告警并请求用户确认删除：
-   │     │   ⚠️ 检测到旧结构知识库目录，与新三层知识库架构（v4.0.0）不兼容：
-   │     │
-   │     │   | 目录 | 文件数（估算）| Token 占用（估算）| 风险 |
-   │     │   |------|------------|----------------|------|
-   │     │   | api-docs/ | ~57 | ~20K | ❗ 会导致上下文超限 |
-   │     │   | api-testcase/ | ~57 | ~40K | ❗ 会导致上下文超限 |
-   │     │   | biz-knowledge/ | ~22 | ~15K | ⚠️ 影响 02 实施方案阶段 |
-   │     │   | test-knowledge/ | ~42 | ~50K | ❗ 会导致上下文超限 |
-   │     │
-   │     │   ✅ 新结构知识库已生成成功，可以安全删除旧目录。
-   │     │
-   │     │   请选择处理方式（输入选项编号）：
-   │     │   [1] 立即删除所有旧目录（推荐）——安全删除，不影响代码工程文件
-   │     │   [2] 只删除 api-docs/ 和 api-testcase/（保留 biz/test-knowledge）
-   │     │   [3] 跳过，我稍后手动处理（⚠️ 后续阶段可能上下文超限）
-   │     │
-   │     │   用户选 [1] → bash: rm -rf {路径}/api-docs/ api-testcase/ biz-knowledge/ test-knowledge/
-   │     │                输出「✅ 旧目录已清理」，继续 Step 3
-   │     │   用户选 [2] → bash: rm -rf {路径}/api-docs/ api-testcase/
-   │     │                输出「✅ 已清理高风险目录」，继续 Step 3
-   │     │   用户选 [3] → 输出「⚠️ 已跳过清理，后续如遇上下文超限请手动删除旧目录后重试」
-   │     │                继续 Step 3（不阻塞）
-   │     │
-   │     └── 失败 → 跳过清理步骤，保留旧目录作为备份，输出：
-   │           ⚠️ 知识库生成未完全成功，保留旧目录作为备份。请手动检查后重试。
    │
    ├─ [Step 3] autoresearch 补强（l4_autoresearch=available 时执行，否则跳过）
    │     执行 /autoresearch:reason 验证 CONTEXT.md 实体在代码中真实存在
@@ -138,7 +87,7 @@ user-invocable: true
    │
    ├─ [Step 5] 无条件写入 KB_FRESHNESS.md（不受任何 Agent 失败影响）
    │     写入字段：最近更新时间 / 更新方式 / 保鲜周期（来自 kb_freshness.stale_after_months，默认1）
-   │             / 建议复查日期 / app-knowledge 状态 / biz-knowledge 状态
+   │             / 建议复查日期 / app-knowledge 状态
    │
    └─ [Step 6] 输出汇总
          应用知识库：  {工程根}/app-knowledge-base/（共 N 个文件）
@@ -163,12 +112,6 @@ user-invocable: true
 │   ├── 03_核心流程与逻辑层.md                  ← L1 按需读（≤300行）[lite]
 │   ├── 04~06_*.md                              ← L2 深度按需（不在 lite 默认生成）
 │   └── db-schema.md                            ← 表结构（generatorConfig.xml 存在时）
-│
-│   # 已移除（2026-05-06 重构）：
-│   # api-docs/         → autoresearch 实时查询替代（默认不生成）
-│   # api-testcase/     → tdd-test-spec 直接读代码生成（默认不生成）
-│   # biz-knowledge/    → 01_业务与领域知识层.md 覆盖（显式请求才触发）
-│   # test-knowledge/   → tdd-test-spec 按需生成（默认不触发）
 ```
 
 ---
@@ -178,8 +121,6 @@ user-invocable: true
 | 知识库 | 主要消费者 | 核心原则 |
 |--------|-----------|---------|
 | **app-knowledge-base** | tech-design、code-gen agent | 代码视角，含类名/方法名/枚举，禁止业务词汇主导 |
-| **biz-knowledge/prd-context** | prd-gen agent | 纯业务语言，禁止代码术语；按需显式请求生成 |
-| **test-knowledge/modules/** | tdd-test-spec agent | 默认不生成；tdd-spec 直接读 CONTEXT.md + api-index.md |
 
 ---
 
@@ -192,8 +133,6 @@ user-invocable: true
 
 `mode=nano` 下：只 spawn app-knowledge-agent。
 `mode=lite` 下：只 spawn app-knowledge-agent。
-显式要求「生成业务知识库」：额外 spawn biz-knowledge-agent（mode=lite）。
-显式要求「生成测试知识库」：额外 spawn test-knowledge-agent（mode=biz）。
 
 ---
 
@@ -234,6 +173,4 @@ Beads 不可用时，回退到 `execution-state.md` 派发清单（见 `docs/sta
 ## 资产文件
 
 - `agents/app-knowledge/app-knowledge-agent.md`
-- `agents/biz-knowledge/biz-knowledge-agent.md` ← 按需显式请求时才使用
-- `agents/test-knowledge/test-knowledge-agent.md` ← 按需显式请求时才使用
-- `assets/templates/` — 各知识库文档模板
+- `assets/templates/` — 知识库文档模板

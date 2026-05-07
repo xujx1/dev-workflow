@@ -111,7 +111,7 @@
 
 主要命中：
 - `app-knowledge-base/api-index.md`（接口清单，识别已有签收相关接口）
-- `app-knowledge-base/biz-knowledge/modules/签收与逆向_知识库.md`（签收业务术语）
+- `app-knowledge-base/01_业务与领域知识层.md`（签收业务术语）
 
 未命中（导致偏差）：
 - 错误码体系未在知识库中记录，PRD 未输出错误码清单
@@ -129,7 +129,7 @@
 ### 测试用例阶段
 
 主要命中：
-- `app-knowledge-base/test-knowledge/modules/签收流程_测试.md`（边界场景参考）
+- `app-knowledge-base/03_核心流程与逻辑层.md`（边界场景参考）
 
 未命中：
 - `buildSignedUrl` 边界测试未被知识库覆盖，需人工补充后纳入知识库

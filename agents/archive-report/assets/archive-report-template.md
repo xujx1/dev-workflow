@@ -140,9 +140,9 @@ target/jacoco.xml
 
 - 分母：对应阶段 `execution-state.md` 中“主要读取路径”总数
 - 分子：
-  - PRD 生成：`app-knowledge-base/`、`biz-knowledge/`
-  - 技术方案：`app-knowledge-base/`、`biz-knowledge/`
-  - 测试用例：`rules/test/`、`test-knowledge/`、`agents/tdd-test-spec/assets/`
+  - PRD 生成：`app-knowledge-base/`
+  - 技术方案：`app-knowledge-base/`
+  - 测试用例：`rules/test/`、`agents/tdd-test-spec/assets/`
 
 输出要求：
 

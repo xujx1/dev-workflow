@@ -35,7 +35,6 @@
 | Agent | 目录 | 用途 |
 |-------|------|------|
 | app-knowledge-agent | `agents/app-knowledge/` | 应用知识库构建 |
-| biz-knowledge-agent | `agents/biz-knowledge/` | 业务域知识提炼 |
 
 ---
 

@@ -7,8 +7,6 @@
 | 模版文件 | 对应知识库 | 使用场景 |
 |---------|-----------|---------|
 | [app-kb-template.md](app-kb-template.md) | 应用知识库（00_概览.md + 六大分层文档） | 梳理一个新服务的全量知识库时，以本模版生成 00_概览.md |
-| [biz-module-template.md](biz-module-template.md) | 业务知识库（biz-knowledge/modules/） | 为每个业务模块生成一份知识文档时使用 |
-| [test-module-template.md](test-module-template.md) | 测试知识库（api-testcase/） | 为每个接口生成测试用例文档时使用 |
 
 ## 模版设计原则
 
@@ -17,5 +15,3 @@
 3. **可验证字段**：每个字段都有明确的填写范例，禁止"待补充"占位
 4. **大小控制**：
    - `app-kb-template.md`（00_概览.md）填完后目标 ≤200 行
-   - `biz-module-template.md` 填完后目标 ≤150 行
-   - `test-module-template.md` 填完后目标 ≤100 行

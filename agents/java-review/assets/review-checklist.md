@@ -17,7 +17,7 @@
 2. 根据改动范围按需加载 `rules/java/standards/` 对应文件
 3. BLOCKER 扫描必读 `rules/java/standards/08-code-quality-gate.md`
 4. 读 `app-knowledge-base/04_工程与规范层.md`
-5. 若涉及业务逻辑，读 `app-knowledge-base/biz-knowledge/modules/{相关模块}.md`
+5. 若涉及业务逻辑，读 `app-knowledge-base/01_业务与领域知识层.md`
 6. 若涉及 DB/SQL，读 `app-knowledge-base/db-schema.md`（若存在）
 7. 若 `{feature_dir}/tech-design.md` 存在，优先读取「附录II：变更影响分析」
 8. 若 `l3_gitnexus=available`，读 `agents/java-review/assets/gitnexus-steps.md` 并执行
