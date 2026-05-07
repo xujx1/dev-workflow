@@ -11,8 +11,6 @@
 | 知识库 | 文件数 | 最后更新 | 状态 |
 |---|---|---|---|
 | 应用知识库（app-knowledge-base） | 32 个文件 | 2026-04-15 | ✅ 新鲜 |
-| 业务知识库（biz-knowledge） | 22 个模块 | 2026-04-15 | ✅ 新鲜 |
-| 测试知识库（test-knowledge） | 8 个模块 | 2026-04-15 | ✅ 新鲜 |
 
 ## 知识库目录结构（生成后）
 
@@ -29,11 +27,4 @@ app-knowledge-base/
 ├── component-index.md                   ← 组件索引
 ├── db-schema.md                         ← 数据库结构扫描
 ├── KB_FRESHNESS.md                      ← 本文件
-├── api-docs/                            ← API 文档（按接口拆分）
-├── biz-knowledge/                       ← 业务知识库
-│   ├── carrier-integrator知识库.md
-│   └── modules/                         ← 22 个业务模块文档
-└── test-knowledge/                      ← 测试知识库
-    ├── 测试知识库导航.md
-    └── modules/                         ← 8 个测试模块文档
 ```

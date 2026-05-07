@@ -31,7 +31,7 @@ npm install -g gitnexus
 
 ---
 
-## 第二步：初始化项目环境
+## 第二步：初始化项目环境 
 
 在你的 **Java 项目根目录**执行：
 
@@ -55,10 +55,10 @@ npm install -g gitnexus
     "mode": "mock-first"
   }
 }
+
 ```
-
 > 一个应用做一次即可，后续不需要重复执行。
-
+详情参考：[00-init](../examples/00-init)
 ---
 
 ## 第三步：构建知识库
@@ -85,7 +85,7 @@ app-knowledge-base/
 ```
 
 > 知识库是所有后续步骤的基础。每次需求归档时自动增量更新，代码大改时建议重新全量构建。
-
+详情参考：[01-knowledge-base](../examples/01-knowledge-base)
 ---
 
 ## 第四步：生成实施方案
@@ -110,7 +110,7 @@ Agent 会依次执行：
 4. **生成技术方案**：为每个应用分别生成技术方案
 
 > 中途可以中断，系统自动保存进度到 `req/{feature-name}/execution-state.md`，重新执行命令从断点继续。
-
+详情参考：[02-implementation-plan](../examples/02-implementation-plan)
 ---
 
 ## 第五步：生成代码与单测
@@ -134,6 +134,10 @@ Phase 5: 执行单测 → 自动纠错直到通过
 
 **五种自动纠错**全程无需干预，Agent 自动处理编译错误、审查问题、单测失败、覆盖率不足。
 
+> 详情参考：[03-code-gen-tdd](../examples/03-code-gen-tdd)
+---
+
+
 ---
 
 ## 第六步：归档
@@ -147,6 +151,8 @@ Phase 5: 执行单测 → 自动纠错直到通过
 
 完成：锁定代码版本 + 增量更新知识库 + 生成需求归档报告。
 
+> 详情参考：[04-archive](../examples/04-archive)
+---
 ---
 
 ## 常见问题

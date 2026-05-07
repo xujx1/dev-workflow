@@ -25,27 +25,6 @@ app-knowledge-base/
 ├── db-schema.md                 ← 数据库结构扫描
 ├── component-index.md           ← 组件索引
 ├── KB_FRESHNESS.md              ← 保鲜标记（本文件）
-├── api-docs/                    ← API 文档（按接口拆分）
-├── biz-knowledge/               ← 业务知识库
-│   └── modules/                 ← 按业务模块拆分
-└── test-knowledge/              ← 测试知识库
-    └── modules/                 ← 按测试模块拆分
 ```
-
-## 三库作用说明
-
-| 知识库 | 主要用途 |
-|---|---|
-| 应用知识库（app-knowledge-base） | Stage 2 技术方案生成的事实基准；Stage 3 测试规格的架构参考 |
-| 业务知识库（biz-knowledge） | Stage 2 PRD 生成时的术语转换和业务背景补充 |
-| 测试知识库（test-knowledge） | Stage 3 测试用例生成时的场景覆盖参考 |
-
-## 本案例数值（your-app-name）
-
-| 知识库 | 文件数 | 状态 |
-|---|---|---|
-| 应用知识库 | 32 个文件（含 56 个接口文档） | ✅ |
-| 业务知识库 | 22 个模块文档 | ✅ |
-| 测试知识库 | 8 个模块文档 | ✅ |
 
 详细保鲜记录见 [KB_FRESHNESS.md](./KB_FRESHNESS.md)。
