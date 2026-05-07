@@ -9,7 +9,6 @@ All notable changes to dev-workflow are documented here.
 ### Changed
 - Open-source preparation: removed internal company identifiers
 - Open-source preparation: replaced internal Feishu domain with placeholder
-- Removed internal-only modules: `plugins/dcc/`, `agents/biz-knowledge/`, `agents/test-knowledge/`
 - Updated SKILL.md: simplified knowledge base version check
 - Added docs: README, QUICK_START, ARCHITECTURE, FEISHU_SETUP, CONTRIBUTING
 
