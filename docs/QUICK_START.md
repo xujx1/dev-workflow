@@ -16,19 +16,8 @@
 
 ```bash
 mkdir -p ~/.claude/commands
-cp ~/.claude/plugins/dev-workflow/commands/*.md ~/.claude/commands/
+cp ~/.claude/plugins/marketplaces/dev-workflow/commands/*.md ~/.claude/commands/
 ```
-
-**推荐同时安装以下增强插件**（可选但建议）：
-
-```bash
-# Token 压缩，节省 57-78% 上下文（推荐）
-brew install rtk && rtk init --global
-
-# 实时调用链分析（代码 Review 阶段自动使用）
-npm install -g gitnexus
-```
-
 ---
 
 ## 第二步：初始化项目环境 
