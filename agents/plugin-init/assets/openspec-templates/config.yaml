@@ -1,0 +1,35 @@
+# OpenSpec 项目配置
+# 文档：https://github.com/anthropics/openspec
+
+schema: java-tdd
+
+context: |
+  Tech stack: Java 17, Spring Boot 3.x, MyBatis
+  API style: RESTful, JSON responses
+  Testing: JUnit 5, Mockito, Spring Boot Test
+  Coverage requirement: ≥80% line coverage
+  Build tool: Maven
+
+rules:
+  proposal:
+    - 包含回滚方案
+    - 识别影响范围（服务、接口、数据库表）
+    - 评估上下游依赖影响
+  specs:
+    - 使用 OpenAPI 3.0 格式
+    - 标注必填字段和默认值
+    - 定义错误码和错误信息
+  design:
+    - 包含时序图（复杂流程）
+    - 包含数据库变更 DDL
+    - 标注事务边界
+    - 考虑并发场景
+  tasks:
+    - 按模块分层（Mapper → Service → Controller → Test）
+    - 每个任务 ≤2 小时工作量
+    - 标注任务依赖关系
+  test_spec:
+    - 使用 M/EX 语义标注用例类型
+    - 每个 AC 至少 1 个 M 用例
+    - 每个异常分支至少 1 个 EX 用例
+    - 标注覆盖率意图

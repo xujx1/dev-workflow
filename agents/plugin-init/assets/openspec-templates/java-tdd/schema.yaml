@@ -1,0 +1,71 @@
+name: java-tdd
+version: 1
+description: Java/Spring Boot + TDD 验证循环工作流
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: 需求提案（为什么做、范围、影响）
+    template: proposal.md
+    instruction: |
+      创建需求提案，说明 WHY：问题背景、业务价值、影响范围。
+      包含：1) 问题陈述 2) 目标 3) 范围边界 4) 回滚方案
+    requires: []
+
+  - id: specs
+    generates: specs/**/*.md
+    description: 接口契约规格
+    template: specs/spec.md
+    instruction: |
+      定义接口契约，使用 OpenAPI 3.0 风格。
+      包含：请求/响应结构、必填字段、错误码、幂等性要求。
+    requires: [proposal]
+
+  - id: design
+    generates: design.md
+    description: 技术设计方案
+    template: design.md
+    instruction: |
+      创建技术设计方案，说明 HOW。
+      包含：架构图/时序图、分层设计（Controller/Service/Mapper）、
+      数据库变更 DDL、关键算法、异常处理策略。
+    requires: [proposal, specs]
+
+  - id: tasks
+    generates: tasks.md
+    description: 实现任务清单（checkbox 驱动）
+    template: tasks.md
+    instruction: |
+      从 design.md 提取实现任务，按分层组织（数据层→业务层→控制层→测试）。
+      每个任务 ≤2 小时工作量，使用 `- [ ]` checkbox 格式。
+    requires: [design]
+
+  - id: test_spec
+    generates: test_spec.md
+    description: TDD 测试规格（M/EX 语义）
+    template: test_spec.md
+    instruction: |
+      创建测试规格，使用 M（正向）/ EX（异常）语义。
+      每个变更方法至少覆盖：1个 M 用例 + 1个 EX 用例。
+      标注覆盖率意图（目标 ≥80%）。
+    requires: [design, tasks]
+
+apply:
+  requires: [tasks, test_spec]
+  tracks: tasks.md
+  instruction: |
+    按 tasks.md 的 checkbox 顺序实现代码。
+    每完成一个任务，更新 checkbox 为 `- [x]`。
+    遇到阻塞时记录到 execution-state.md。
+
+verify:
+  requires: [apply]
+  checks:
+    - test_coverage
+    - code_review
+    - tasks_completion
+  instruction: |
+    验证实现完整性：
+    1. 检查 tasks.md 完成度（所有 checkbox 已勾选）
+    2. 运行测试，确认覆盖率 ≥80%
+    3. 执行代码 Review（调用 java-review-agent）

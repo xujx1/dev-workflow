@@ -1,0 +1,63 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_PAT_HERE"
+      },
+      "description": "GitHub 操作 — PR、Issue、仓库搜索、代码搜索"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "description": "实时文档查询 — Java/Spring Boot/Maven/JUnit4 等框架文档。配合 /docs 命令和 documentation-lookup skill 使用"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "链式推理 — 架构决策、复杂业务规则分析时使用"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp", "--browser", "chrome"],
+      "description": "浏览器自动化 — 已配置，用于 E2E 测试和页面操作"
+    },
+    "exa-web-search": {
+      "command": "npx",
+      "args": ["-y", "exa-mcp-server"],
+      "env": {
+        "EXA_API_KEY": "YOUR_EXA_API_KEY_HERE"
+      },
+      "description": "网络搜索 — 技术调研兜底。优先 GitHub 代码搜索 + context7 文档查询，不足时才用此项"
+    },
+    "gitnexus": {
+      "command": "npx",
+      "args": ["-y", "gitnexus@latest", "mcp"],
+      "description": "调用链分析 — 生成变更影响分析（附录II）。需先在项目目录执行 gitnexus analyze . 建立索引"
+    },
+    "openspec": {
+      "command": "npx",
+      "args": ["-y", "openspec@latest", "mcp"],
+      "description": "OpenSpec 规格驱动开发 — 变更提案管理、规格生成、任务驱动实现。Stage 2.5/3/4 集成。命令: /opsx:new, /opsx:ff, /opsx:archive"
+    },
+  "_comments": {
+    "usage": "从此处复制所需的服务器配置到 ~/.claude.json 的 mcpServers 节",
+    "env_vars": "将 YOUR_*_HERE 替换为实际值",
+    "context_warning": "保持不超过 10 个 MCP 启用，以保留上下文窗口",
+    "layer_mapping": {
+      "L0_基础层": ["github", "context7"],
+      "L1_通用工具": ["sequential-thinking", "exa-web-search"],
+      "L2_测试层": ["playwright"],
+      "L3_结构分析": ["gitnexus"],
+      "L4_规格驱动": ["openspec"],
+      "L5_企业集成": ["feishu", "mooncake"]
+    },
+    "integration_points": {
+      "gitnexus": "Phase 3 Code Review (java-review-agent) + 技术方案影响面分析",
+      "openspec": "Stage 2.5 确认门 → Stage 3 任务驱动实现 → Stage 4 归档",
+      "feishu": "Stage 0 MRD 读取 + Stage 2 PRD/技术方案上传 + Stage 4 归档报告",
+      "mooncake": "Stage 2 技术方案接口文档查询 + Mock 数据生成"
+    }
+  }
+}

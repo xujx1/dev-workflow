@@ -1,0 +1,14 @@
+# {PROJECT_NAME} 生产环境配置说明
+# ⚠️ 生产配置通过 K8s Secret / 配置中心注入，本文件仅作字段说明，禁止填写真实值
+
+# 所有字段命名规范：{SERVICE_NAME}/{category}/{key}
+# 示例：my-service/db/password
+
+# === 数据库（生产只读账号，写操作通过应用层）===
+# DB_HOST        # 从 Nacos 配置中心获取
+# DB_PASSWORD    # 从 K8s Secret 注入
+DB_PROD_READONLY=true
+
+# === 监控 ===
+SKYWALKING_BACKEND=
+PROMETHEUS_PORT=9090

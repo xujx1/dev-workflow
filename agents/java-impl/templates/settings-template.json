@@ -1,0 +1,117 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git checkout*)",
+      "Bash(git branch*)",
+      "Bash(git fetch*)",
+      "Bash(git pull*)",
+      "Bash(git stash*)",
+      "Bash(mvn compile*)",
+      "Bash(mvn test*)",
+      "Bash(mvn package*)",
+      "Bash(mvn install*)",
+      "Bash(mvn dependency*)",
+      "Bash(mvn clean*)",
+      "Bash(java -version)",
+      "Bash(mvn -version)",
+      "Bash(ls*)",
+      "Bash(find*)",
+      "Bash(grep*)",
+      "Bash(cat*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(wc*)",
+      "Bash(echo*)",
+      "Bash(mkdir*)",
+      "Bash(cp*)",
+      "Bash(mv*)",
+      "Bash(curl -s*)",
+      "Bash(kubectl get*)",
+      "Bash(kubectl describe*)",
+      "Bash(kubectl logs*)",
+      "Bash(kubectl rollout status*)",
+      "Bash(docker ps*)",
+      "Bash(docker logs*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git reset*)",
+      "Bash(kubectl apply*)",
+      "Bash(kubectl scale*)",
+      "Bash(kubectl rollout restart*)",
+      "Bash(docker run*)",
+      "Bash(docker exec*)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(kubectl delete*)",
+      "Bash(kubectl exec*)",
+      "Bash(drop table*)",
+      "Bash(drop database*)",
+      "Bash(truncate*)",
+      "Bash(delete from*)",
+      "Bash(update * set*)",
+      "Bash(insert into*)",
+      "Bash(alter table*)",
+      "Bash(chmod 777*)",
+      "Bash(sudo rm*)",
+      "Bash(pkill*)",
+      "Bash(kill -9*)",
+      "Bash(shutdown*)",
+      "Bash(reboot*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"=== {PROJECT_NAME} 环境预检 ===\"; java -version 2>&1 | head -1; mvn -version 2>&1 | head -1; git branch --show-current 2>/dev/null && echo \"Git: OK\" || echo \"Git: 未初始化\"; echo \"知识库入口: app-knowledge-base/_index.md\"; echo \"=============================\"'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'CMD=\"$1\"; if echo \"$CMD\" | grep -qiE \"(rm -rf|git push --force|git push -f|drop table|drop database|truncate |kubectl delete|delete from .* where 1=1|kill -9)\"; then echo \"[BLOCKED] 危险命令被拦截: $CMD\" >&2; exit 1; fi' -- \"$CLAUDE_TOOL_INPUT_COMMAND\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$1\"; if echo \"$FILE\" | grep -qE \"\\.java$\"; then MODULE=$(echo \"$FILE\" | grep -oE \"{MAVEN_MODULE_PATTERN}\" | head -1); if [ -n \"$MODULE\" ]; then echo \"[auto-compile] $MODULE\"; cd {PROJECT_ROOT} && mvn compile -pl \"$MODULE\" -am -q 2>&1 | tail -5; fi; fi' -- \"$CLAUDE_TOOL_INPUT_FILE_PATH\""
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'COUNT=$(cat /tmp/.claude_tool_count_$$ 2>/dev/null || echo 0); COUNT=$((COUNT+1)); echo $COUNT > /tmp/.claude_tool_count_$$; if [ $((COUNT % 30)) -eq 0 ]; then echo \"\\n⚡ [compact-reminder] 已执行 ${COUNT} 次工具调用，建议 /compact\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}

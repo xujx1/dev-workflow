@@ -1,0 +1,30 @@
+{
+  "env": {
+    "java_version": "1.8.0_482",
+    "maven_version": "3.9.12",
+    "maven_path": "/Users/admin/maven/maven/3.9.12/bin/mvn",
+    "maven_settings": "",
+    "test_deps_junit5": false,
+    "test_deps_junit_version": 4,
+    "test_deps_mockito": true,
+    "env_confirmed": true
+  },
+  "openspec": {
+    "enabled": true,
+    "threshold_person_days": 5,
+    "generate_stage": "before_code_gen",
+    "archive_in_stage4": true
+  },
+  "test_runtime": {
+    "enabled": true,
+    "mode": "mock-first"
+  },
+  "plugin_availability": {
+    "l0_ecc": "available",
+    "l0_ecc_rules": "unavailable",
+    "l1_rtk": "available",
+    "l2_gitnexus": "not_indexed",
+    "l3_autoresearch": "available",
+    "l4_pua": "unavailable"
+  }
+}

@@ -1,0 +1,17 @@
+/docs/flows/skills-flowchart.drawio
+/docs/flows/skills-flowchart.feishu-board.md
+/.gitnexus/
+/req/
+/.idea/
+/.claude/
+/.mrd-to-code-config.json
+/.cursor/
+/.claude-plugin/
+/.idea/
+/.beads/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+/.beads/

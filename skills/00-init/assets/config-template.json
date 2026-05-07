@@ -1,0 +1,73 @@
+{
+  "env": {
+    "repo_path": "/path/to/your-project",
+    "java": {
+      "detected": true,
+      "version": "1.8.0_xxx",
+      "vendor": "Amazon.com Inc.",
+      "runtime": "/path/to/jre"
+    },
+    "maven": {
+      "detected": true,
+      "version": "3.9.x",
+      "home": "/path/to/maven"
+    },
+    "env_confirmed": true,
+    "detected_at": "ISO8601_TIMESTAMP"
+  },
+  "test_runtime": {
+    "mode": "mock-first",
+    "frameworks": ["junit", "spring-boot-starter-test", "mockito"],
+    "test_dirs": [
+      "module-a/src/test",
+      "module-b/src/test"
+    ]
+  },
+  "openspec": {
+    "enabled": true,
+    "threshold_person_days": 5,
+    "generate_stage": "before_code_gen",
+    "archive_in_stage4": true
+  },
+  "plugin_availability": {
+    "ecc": {
+      "installed": true,
+      "version": "SEMVER",
+      "path": "/path/to/ecc"
+    },
+    "rtk": {
+      "installed": true,
+      "version": "SEMVER",
+      "path": "/path/to/rtk"
+    },
+    "gitnexus": {
+      "installed": true,
+      "note": "MCP tools available via mcp__gitnexus__* prefix"
+    },
+    "autoresearch": {
+      "installed": true,
+      "note": "Available via /autoresearch skill"
+    },
+    "pua": {
+      "installed": true,
+      "version": "SEMVER",
+      "path": "/path/to/pua"
+    },
+    "openspec": {
+      "installed": true,
+      "version": "SEMVER",
+      "initialized": true,
+      "config_path": "openspec/config.yaml"
+    },
+    "beads": {
+      "installed": true,
+      "version": "SEMVER",
+      "path": "/Users/admin/.local/bin/bd",
+      "initialized": true,
+      "backend": "dolt",
+      "mode": "embedded",
+      "database": "YOUR_PROJECT_DB_NAME",
+      "issue_prefix": "your-project-name"
+    }
+  }
+}
