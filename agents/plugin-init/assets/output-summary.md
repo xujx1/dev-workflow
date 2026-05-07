@@ -18,8 +18,8 @@
 |------|------------|--------|--------------------------------------------|-----------------|
 | L0   | ECC        | {状态} | /plugin marketplace add everything-claude-code | 基础运行时，强烈推荐 |
 | L1   | RTK        | {状态} | brew install rtk && rtk init --global      | Token 压缩，强烈推荐 |
-| L2   | GitNexus   | {状态} | /dev-workflow:00-init --layer L2           | 调用链分析，可选 |
-| L3   | autoresearch | {状态} | /plugin install autoresearch@autoresearch  | 推理增强，可选   |
+| L2   | GitNexus   | {状态} | /dev-workflow:00-init --layer L2           | 调用链分析，知识库构建默认使用，推荐 |
+| L3   | autoresearch | {状态} | /plugin install autoresearch@autoresearch  | 知识库构建必需，推荐 |
 | L4   | PUA        | {状态} | /plugin install pua@pua-skills             | 激励引擎，可选   |
 | L5   | Beads      | {状态} | curl -fsSL .../install.sh | bash && bd init | 任务追踪，推荐   |
 

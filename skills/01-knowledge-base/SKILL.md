@@ -29,10 +29,10 @@ user-invocable: true
 
 ### 插件可用性
 
-| 标志位 | 影响能力 |
-|--------|---------|
-| `l3_gitnexus=available` | GitNexus 调用链分析 |
-| `l4_autoresearch=available` | 知识库梳理完成后自动追加场景补强分析 |
+| 标志位 | 影响能力 | 缺失时处理 |
+|--------|---------|-----------|
+| `l3_gitnexus=available` | GitNexus 调用链分析，增强代码扫描深度 | 降级跳过，不阻塞 |
+| `l4_autoresearch=available` | autoresearch 验证 CONTEXT.md 实体真实性（**默认执行**） | 降级跳过，输出提示安装 |
 
 > 如需安装或更新插件，请运行：`/dev-workflow:00-init`
 
@@ -59,6 +59,8 @@ user-invocable: true
    │
    ├─ [Step 1] 以 Task 工具 spawn 子 Agent（按 mode 参数决定数量）
    │     └─ app-knowledge-agent   → app-knowledge-base/（代码扫描，mode=nano/lite 均执行）
+   │          l3_gitnexus=available → Agent 内部使用 GitNexus 调用链分析增强扫描深度
+   │          l3_gitnexus 未安装 → 退回纯静态代码扫描，不阻塞
    │
    │     ⚠️ **Task prompt 构造模板（硬约束，违反即 "Prompt is too long"）**：
    │     每个 agent 的 Task prompt 只允许包含以下内容，禁止任何其他文本：
@@ -76,9 +78,10 @@ user-invocable: true
    │     └── 确认 KB_INDEX.md + CONTEXT.md + component-index.md 已落盘
    │          任一失败 → 记录原因，继续推进（不阻塞 Step 3/4）
    │
-   ├─ [Step 3] autoresearch 补强（l4_autoresearch=available 时执行，否则跳过）
+   ├─ [Step 3] autoresearch 补强（**默认执行**，l4_autoresearch 未安装时降级跳过并提示）
    │     执行 /autoresearch:reason 验证 CONTEXT.md 实体在代码中真实存在
    │     发现遗漏实体 → 追加到 CONTEXT.md（不超行数上限）
+   │     l4_autoresearch 未安装 → 跳过，输出「建议安装 autoresearch: /dev-workflow:00-init」
    │
    ├─ [Step 4] 一致性验证（文件不存在则跳过该项对比，不报错）
    │     ├── 读 01_业务与领域知识层.md 的核心实体

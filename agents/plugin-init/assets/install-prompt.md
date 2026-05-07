@@ -9,13 +9,13 @@
 ║  [L0] ECC 基础运行时 — hooks/agents/skills 基础环境（强烈推荐）      ║
 ║  [L0] ECC Rules（可选）— 全局编码规范 hooks，会阻止部分文件操作      ║
 ║  [L1] RTK Token 压缩 — 节省 57-78% token（强烈推荐）                ║
-║  [L2] GitNexus 调用链分析 — 理解代码依赖图，提升代码生成精准度       ║
-║  [L3] autoresearch 推理增强 — 深度搜索+多轮推理                      ║
+║  [L2] GitNexus 调用链分析 — 理解代码依赖图，提升代码生成精准度（默认安装）║
+║  [L3] autoresearch 推理增强 — 知识库构建必需，深度搜索+多轮推理（默认安装）║
 ║  [L4] PUA 激励引擎 — 强制穷尽方案，防止 AI 摆烂（可选）             ║
 ║  [L5] Beads 任务追踪 — 跨会话上下文恢复，替代 TodoWrite（默认安装）  ║
 ╠══════════════════════════════════════════════════════════════════════╣
-║  ok/all → 安装所有（跳过 ECC Rules，含 Beads 默认初始化）            ║
-║  full   → 安装全部（含 ECC Rules + Beads）                           ║
+║  ok/all → 安装所有（跳过 ECC Rules，含 GitNexus + autoresearch + Beads 默认初始化）║
+║  full   → 安装全部（含 ECC Rules + GitNexus + autoresearch + Beads）  ║
 ║  select → 逐层选择                                                   ║
 ║  check  → 只检测，不安装                                             ║
 ╚══════════════════════════════════════════════════════════════════════╝

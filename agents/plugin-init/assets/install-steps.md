@@ -25,7 +25,29 @@ brew install rtk && rtk init --global
 /plugin marketplace add https://github.com/abhigyanpatwari/GitNexus
 /plugin install gitnexus@gitnexus-marketplace
 ```
-然后写入 MCP 配置到 `{project_root}/.claude/settings.json`。
+安装后写入 MCP 配置到 `{project_root}/.claude/settings.json`：
+```bash
+SETTINGS_FILE="$PWD/.claude/settings.json"
+mkdir -p "$PWD/.claude"
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo '{}' > "$SETTINGS_FILE"
+fi
+python3 << 'EOF'
+import json, os
+settings_path = os.path.join(os.getcwd(), '.claude', 'settings.json')
+try:
+    settings = json.load(open(settings_path))
+except:
+    settings = {}
+settings.setdefault('mcpServers', {})['gitnexus'] = {
+    "command": "npx",
+    "args": ["-y", "gitnexus", "mcp"],
+    "env": {}
+}
+json.dump(settings, open(settings_path, 'w'), indent=2, ensure_ascii=False)
+print(f"✅ GitNexus MCP 已写入: {settings_path}")
+EOF
+```
 
 **GitNexus 索引创建**（**安装后默认自动执行，不需要用户确认**）：
 ```bash

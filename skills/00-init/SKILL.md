@@ -14,7 +14,7 @@ user-invocable: true
 | Agent | 调用指令 | 职责 | 是否必做 |
 |-------|---------|------|---------|
 | `project-init` | `/dev-workflow:project-init` | 检测 Java/Maven 环境 + 测试依赖，写入 `env` 字段 | **必做**，后续 Skill 依赖 `env_confirmed=true` |
-| `plugin-init` | `/dev-workflow:00-init --plugin` | 检测并安装 ECC/RTK/GitNexus/autoresearch/PUA/OpenSpec/Beads，写入 `plugin_availability`；**默认包含 OpenSpec 安装 + 在业务工程目录执行 `openspec init`；Beads 默认安装并执行 `bd init` + `bd setup claude`** | **推荐**，OpenSpec 为核心工作流引擎，Beads 为默认任务追踪，均默认安装 |
+| `plugin-init` | `/dev-workflow:00-init --plugin` | 检测并安装 ECC/RTK/GitNexus/autoresearch/PUA/OpenSpec/Beads，写入 `plugin_availability`；**默认包含 GitNexus 安装（含 MCP 配置 + `npx gitnexus analyze` 索引创建）+ autoresearch 安装（知识库构建必需）+ OpenSpec 安装 + 在业务工程目录执行 `openspec init`；Beads 默认安装并执行 `bd init` + `bd setup claude`** | **推荐**，GitNexus + autoresearch 为知识库构建默认依赖，OpenSpec 为核心工作流引擎，Beads 为默认任务追踪，均默认安装 |
 | `beads_init` | `/dev-workflow:00-init --beads` | 单独初始化 Beads 任务追踪（`bd init` + `bd setup claude`），写入 CLAUDE.md 集成指令；**已内嵌到 plugin-init 默认流程，通常无需单独执行** | **可选**，plugin-init 已默认包含 |
 
 Agent 定义路径：
