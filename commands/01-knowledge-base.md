@@ -1,5 +1,5 @@
 ---
-description: 构建或更新应用知识库（app-kb + biz-kb + testcase-kb）。传入应用名或留空自动识别。
+description: 构建或更新应用知识库。传入应用名或留空自动识别。
 argument-hint: [应用名 | 留空自动识别]
 ---
 
