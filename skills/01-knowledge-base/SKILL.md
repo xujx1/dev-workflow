@@ -176,4 +176,3 @@ Beads 不可用时，回退到 `execution-state.md` 派发清单（见 `docs/sta
 ## 资产文件
 
 - `agents/app-knowledge/app-knowledge-agent.md`
-- `assets/templates/` — 知识库文档模板
