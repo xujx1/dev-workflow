@@ -22,7 +22,6 @@
 | coverage-report-agent | `agents/coverage-report/` | JaCoCo 覆盖率报告 | 归档阶段 |
 | prd-generator-agent | `agents/prd-generator/` | PRD 生成 | Stage 1 |
 | mrd-reader-agent | `agents/mrd-reader/` | MRD 读取与澄清 | Stage 0 |
-| req-splitter-agent | `agents/req-splitter/` | 需求拆解 Story+AC | Stage 1 尾 |
 | tech-design-agent | `agents/tech-design/` | 技术方案生成 | Stage 2 |
 | tdd-test-spec-agent | `agents/tdd-test-spec/` | TDD 测试规格 | Stage 3 Phase 1 |
 | testcode-gen-agent | `agents/testcode-gen/` | 单元测试代码生成 | Stage 3 Phase 4 |
