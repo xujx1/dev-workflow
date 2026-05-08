@@ -15,9 +15,11 @@ MRD ──→ app-knowledge-base (事实基准) ──→ PRD → 技术方案
 ---
 
 ## 完整性检测（Step 0）
-
-- app-knowledge-base/CONTEXT.md 存在 → 继续
-- app-kb 不存在 → 阻塞提示：先运行「梳理知识库」或回复「跳过」继续
+    - 检测 `CONTEXT.md` 是否存在
+    - 检测 `KB_FRESHNESS.md` 是否存在
+    - 若任一缺失，提示用户选择：
+        - A. 补齐缺失文件（推荐）
+        - B. 跳过，使用现有知识库
 
 ---
 
