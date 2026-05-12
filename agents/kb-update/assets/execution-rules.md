@@ -2,7 +2,6 @@
 
 > 本文件由 `kb-update-agent.md` 骨架按需 Read。
 
-> 通用执行规则（状态文件写入/并行派发/派发失败处理/Token 门禁）详见 `rules/common/execution-rules.md`。
 
 ## Step 4-2-A：分析本次变更范围
 

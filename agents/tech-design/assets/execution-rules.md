@@ -2,7 +2,6 @@
 
 > 本文件由 `tech-design-agent.md` 骨架按需 Read。
 
-> 通用执行规则（状态文件写入/并行派发/派发失败处理/Token 门禁）详见 `rules/common/execution-rules.md`。
 
 ## 步骤 1：并行读取资料
 

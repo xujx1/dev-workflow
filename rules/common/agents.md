@@ -48,6 +48,10 @@
 
 ## Skill 与 Agent 边界（硬约束）
 
+> ⚠️ **P0 全局硬约束**：在任何 Skill / orchestrator 的任何 Phase 中，**严禁**将 `subagent_type` 设为 `general-purpose`。所有 Task spawn 必须使用本文件「可用 Agent」表中明确列出的专职 Agent。违反即视为编排越权，产物无效，必须重做。
+>
+> **无可用专职 Agent 时的唯一合法动作**：中断并报告 `⛔ 无匹配专职 Agent：<步骤名>，请人工补充 agents.md`，禁止降级为 `general-purpose` 兜底。
+
 1. Skill / orchestrator **只负责编排**：派发 Agent、传递上下文、等待结果、展示确认门、更新状态文件。
 2. 只要某一步在 Skill 中已指定专职 Agent，**必须**调度该 Agent 执行；禁止在 Skill / orchestrator 中直接完成该 Agent 的正文工作。
 3. 禁止因为流程复杂、步骤过多、上下文不足、模型能力差异或追求速度而合并多个 Agent 步骤、跳过中间 Phase、或用摘要/分析稿冒充正式产物。
