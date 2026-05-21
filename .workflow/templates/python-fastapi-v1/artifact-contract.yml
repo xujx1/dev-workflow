@@ -1,0 +1,25 @@
+artifact_contract:
+  name: python-fastapi-v1
+  tech_stack: python-fastapi
+  test_framework: pytest+httpx
+  package_manager: pip
+  
+  required_files:
+    - app/router/*.py
+    - app/service/*.py
+    - app/schema/*.py
+    - app/crud/*.py
+    
+  test_files:
+    - tests/test_router/*.py
+    - tests/test_service/*.py
+    - tests/test_crud/*.py
+    
+  optional_files:
+    - app/model/*.py
+    - app/config/*.py
+    - app/exceptions/*.py
+    
+  output_format:
+    type: directory
+    root: app/

@@ -1,4 +1,19 @@
 {
+  "project": {
+    "name": "example-project",
+    "tech_stack": "java-spring-boot",
+    "test_framework": "junit5+mockito",
+    "package_manager": "maven",
+    "directory_convention": "layered"
+  },
+  "knowledge_base": {
+    "root": "knowledge-base/",
+    "context_file": "knowledge-base/CONTEXT.md"
+  },
+  "code_gen": {
+    "template_set": "java-spring-boot-v2",
+    "mock_strategy": "mock-first"
+  },
   "env": {
     "java_version": "1.8.0_482",
     "maven_version": "3.9.12",
@@ -26,5 +41,12 @@
     "l2_gitnexus": "not_indexed",
     "l3_autoresearch": "available",
     "l4_pua": "unavailable"
+  },
+  "autofix": {
+    "max_attempts": 3,
+    "timeout_minutes": 5,
+    "min_pass_rate": 100,
+    "stop_on_regression": true,
+    "stop_on_no_progress_rounds": 2
   }
 }

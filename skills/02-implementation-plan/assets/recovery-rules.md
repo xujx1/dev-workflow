@@ -33,7 +33,7 @@
 | `tech_feishu_url` | Stage 2 上传飞书后 | 飞书文档 URL |
 | `tech_input_version` | Stage 2 完成后 | `feishu-confirmed` / `local-confirmed` / `local-draft` |
 | `last_completed_stage` | 每阶段完成后 | `stage1-prd` / `stage2-tech-design` |
-| `next_stage` | 每阶段完成后 | `stage2-tech-design` / `code-gen` |
+| `next_stage` | 每阶段完成后 | `stage2-tech-design` / `none` |
 
 ---
 
@@ -60,7 +60,7 @@
 | `tech_local_path` | Phase 2-B 落盘后 | `{feature_abs_path}/tech-design.md` |
 | `tech_feishu_url` | Phase 2-B 上传飞书后 | 应用级独立飞书文档 URL |
 | `last_completed_stage` | 每阶段完成后 | `stage2-tech-design` |
-| `next_stage` | 每阶段完成后 | `code-gen` |
+| `next_stage` | 每阶段完成后 | `none` |
 
 ---
 

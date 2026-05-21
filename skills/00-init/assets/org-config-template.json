@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "layer": "org",
+  "_description": "组织级配置，全组织共享的规范和策略",
+  "_maintainer": "基础设施团队 / 架构师",
+  "code_style": {
+    "max_line_length": 120,
+    "indent": "4-spaces",
+    "_source": "组织统一代码风格"
+  },
+  "security": {
+    "forbidden_models": ["gpt-3.5-turbo"],
+    "locked": true,
+    "_source": "安全策略，不可修改"
+  },
+  "knowledge_base": {
+    "default_freshness_threshold": 5,
+    "_source": "知识库默认新鲜度阈值（天）"
+  },
+  "lint": {
+    "enabled": true,
+    "fail_on_error": true,
+    "_source": "统一 lint 策略"
+  }
+}

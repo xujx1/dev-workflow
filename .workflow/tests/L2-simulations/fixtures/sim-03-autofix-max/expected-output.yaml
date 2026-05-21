@@ -1,0 +1,30 @@
+# SIM_03 预期行为
+
+simulation_id: SIM_03
+description: autofix.attempts = max_attempts 时，autofix loop 停止，返回 FAILED_MAX_ATTEMPTS
+
+## 输入状态
+- autofix.attempts: 3
+- autofix.max_attempts: 3
+- autofix.status: in_progress
+
+## 预期行为
+orchestrator_action: stop_autofix_loop
+stop_reason: "max_attempts_reached"
+should_exit_with_failure: true
+should_not_continue_autofix: true
+
+## 验证点
+verify:
+  - autofix_loop_stops: true
+  - returns_failed_max_attempts: true
+  - no_further_autofix_attempts: true
+  - user_notified_of_failure: true
+
+## 预期输出
+expected_output:
+  status: FAILED_MAX_ATTEMPTS
+  final_attempt: 3
+  max_attempts: 3
+  failure_reason: "autofix 达到最大尝试次数"
+  recovery_suggestion: "请手动修复后重试或降低覆盖率目标"

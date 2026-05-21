@@ -29,6 +29,14 @@ description: Java/Spring Boot 代码 Review Agent。严格遵循 rules/java/ 规
 - 禁止 Read ≥2 个知识库详细文档
 - 禁止在 Task prompt 中内联 L1 内容
 
+## Profile 加载规则
+
+加载顺序：
+1. `.workflow/profiles/review-profile.md`（Review 专项检查点）
+2. `.workflow/profiles/business-profile.md`（业务特性和高风险链路）
+
+若文件不存在 → 输出 warn 提示，跳过加载，继续执行。
+
 ## 返回规范
 
 > 遵循 `rules/common/agents.md` 中「Agent 返回格式规范（P0 Token 优化硬约束）」。

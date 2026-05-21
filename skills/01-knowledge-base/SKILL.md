@@ -23,8 +23,31 @@ user-invocable: true
 {
   "plugin_availability": {},
   "openspec": {"enabled": true, "threshold_person_days": 5, "generate_stage": "before_code_gen", "archive_in_stage4": true},
-  "test_runtime": {"enabled": true, "mode": "mock-first"}
+  "test_runtime": {"enabled": true, "mode": "mock-first"},
+  "model_routing": {
+    "enabled": false,
+    "baseline_model": "claude-sonnet-4",
+    "category_models": {
+      "deep": ["claude-opus-4", "claude-sonnet-4"],
+      "quick": ["claude-haiku-4", "claude-sonnet-4"],
+      "writing": ["claude-sonnet-4"],
+      "default": ["claude-sonnet-4"]
+    }
+  }
 }
+```
+
+## 模型路由集成
+
+本 Skill 使用 `quick` 类别模型，解析方式：
+
+```bash
+node .workflow/scripts/model-resolver.js resolve 01-knowledge-base
+```
+
+记录模型使用：
+```bash
+node .workflow/scripts/model-resolver.js log 01-knowledge-base <model> quick
 ```
 
 ### 插件可用性
@@ -89,10 +112,16 @@ user-invocable: true
    │     └── 输出差异报告（无差异则标注「两库一致」）
    │
    ├─ [Step 5] 无条件写入 KB_FRESHNESS.md（不受任何 Agent 失败影响）
-   │     写入字段：最近更新时间 / 更新方式 / 保鲜周期（来自 kb_freshness.stale_after_months，默认1）
-   │             / 建议复查日期 / app-knowledge 状态
-   │
-   └─ [Step 6] 输出汇总
+│     写入字段：最近更新时间 / 更新方式 / 保鲜周期（来自 kb_freshness.stale_after_months，默认1）
+│             / 建议复查日期 / app-knowledge 状态
+│
+├─ [Step 5.5] style-profile 生成（如 .workflow/profiles/style-profile.md 不存在）
+│     └─ 从代码抽样分析，生成 style-profile.md 初版
+│          覆盖维度：分层习惯、命名习惯、日志习惯、异常习惯、测试习惯
+│          若文件已存在 → 跳过，不覆盖
+│          ⚠️ 初版需人工 review 后再使用
+│
+└─ [Step 6] 输出汇总
          应用知识库：  {工程根}/app-knowledge-base/（共 N 个文件）
          知识库保鲜标记：{工程根}/app-knowledge-base/KB_FRESHNESS.md [已更新]
          下一步：可运行「生成PRD」（入口2）
@@ -115,6 +144,9 @@ user-invocable: true
 │   ├── 03_核心流程与逻辑层.md                  ← L1 按需读（≤300行）[lite]
 │   ├── 04~06_*.md                              ← L2 深度按需（不在 lite 默认生成）
 │   └── db-schema.md                            ← 表结构（generatorConfig.xml 存在时）
+└── .workflow/
+    └── profiles/
+        └── style-profile.md                   ← 代码风格初版（Step 5.5 生成，不存在时）
 ```
 
 ---

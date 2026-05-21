@@ -32,6 +32,7 @@ if '## 归档阶段' not in c:
     | 阶段 | 状态 | 产出 | 完成时间 | 消耗Token |
     |------|------|------|---------|---------|
     | Step 4-0.5 代码快照 | ⏳ 待执行 | archive_code_ref | — | — |
+    | Step 4-0.6 保鲜检测 | ⏳ 待执行 | freshness_score | — | — |
     | Step 4-1 OpenSpec 归档 | ⏳ 待执行 | spec/ | — | — |
     | Step 4-2 知识库更新 | ⏳ 待执行 | app-knowledge-base/ | — | — |
     | Step 4-3~4-4 归档报告 | ⏳ 待执行 | archive-report.md | — | — |
@@ -46,6 +47,7 @@ if '## Archive Checklist' not in c:
 ## Archive Checklist
 
 - [ ] step4-0.5-code-snapshot
+- [ ] step4-0.6-freshness-check
 - [ ] step4-1-openspec-archive
 - [ ] step4-2-kb-update
 - [ ] step4-3-4-archive-report
@@ -91,6 +93,78 @@ c = re.sub(
 c = c.replace('- [ ] step4-0.5-code-snapshot', '- [x] step4-0.5-code-snapshot')
 pathlib.Path(f).write_text(c, encoding='utf-8')
 print('Step 4-0.5 state written')
+"
+```
+
+---
+
+## Step 4-0.6: 知识库保鲜检测
+
+> 在任何知识库更新之前执行，确保知识库新鲜度符合归档要求。
+
+**执行脚本**：
+
+```bash
+node .workflow/scripts/freshness-check.js --kb-path {kb_local_path}
+```
+
+**退出码处理**：
+- `exit code 0`: FRESH（freshness_score >= 80），继续归档
+- `exit code 1`: STALE_WARN（freshness_score 60-79），执行增量 refresh 后继续
+- `exit code 2`: STALE_BLOCK（freshness_score < 60），阻断归档，要求先执行知识库重建
+
+**STALE_WARN 处理**：
+
+当检测到 STALE_WARN 时，执行增量 refresh：
+
+```bash
+node .workflow/scripts/freshness-check.js --kb-path {kb_local_path} --refresh
+```
+
+增量 refresh 会：
+1. 读取 git log 中自上次归档以来的 commit 列表
+2. 提取涉及的模块路径（按文件路径匹配 CONTEXT.md 中的模块描述）
+3. 对涉及模块，逐模块执行轻量 refresh（只更新该模块的描述段落）
+4. 更新 freshness metadata 并写入 knowledge-base/freshness.yml
+
+**STALE_BLOCK 处理**：
+
+当检测到 STALE_BLOCK 时：
+1. 输出错误信息：`[ERROR] STALE_BLOCK detected. Knowledge base rebuild required before archive.`
+2. 阻断归档流程
+3. 提示用户执行知识库重建：`/dev-workflow:01-knowledge-base`
+
+### 落盘
+
+```bash
+python3 -c "
+import re, datetime, pathlib
+f = '{feature_dir}/execution-state.md'
+c = pathlib.Path(f).read_text(encoding='utf-8')
+now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+tokens = '{session_token_count}'
+# 根据 freshness 状态更新
+if {freshness_blocked}:
+    c = re.sub(
+        r'(\| Step 4-0\.6 保鲜检测 \| )⏳ 待执行( \| )—( \| )—( \| )—( \|)',
+        rf'\g<1>❌ 阻断\2freshness_score={freshness_score}\3{now}\4{tokens}k\5',
+        c
+    )
+elif {freshness_warn}:
+    c = re.sub(
+        r'(\| Step 4-0\.6 保鲜检测 \| )⏳ 待执行( \| )—( \| )—( \| )—( \|)',
+        rf'\g<1>⚠️ 已刷新\2freshness_score={freshness_score}\3{now}\4{tokens}k\5',
+        c
+    )
+else:
+    c = re.sub(
+        r'(\| Step 4-0\.6 保鲜检测 \| )⏳ 待执行( \| )—( \| )—( \| )—( \|)',
+        rf'\g<1>✅ 已完成\2freshness_score={freshness_score}\3{now}\4{tokens}k\5',
+        c
+    )
+c = c.replace('- [ ] step4-0.6-freshness-check', '- [x] step4-0.6-freshness-check')
+pathlib.Path(f).write_text(c, encoding='utf-8')
+print('Step 4-0.6 state written')
 "
 ```
 

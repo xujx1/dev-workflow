@@ -95,6 +95,103 @@ Step 6: 写入 plugin_availability
 `.mrd-to-code-config.json` 由 `project-init` 和 `plugin-init` agent 共同写入。
 
 完整字段说明见：
-- **env / test_runtime / openspec** → [`agents/project-init/project-init-agent.md`](../../agents/project-init/project-init-agent.md) "配置文件输出结构"章节
-- **plugin_availability** → [`agents/plugin-init/plugin-init-agent.md`](../../agents/plugin-init/plugin-init-agent.md) "配置文件输出结构"章节
+- **env / test_runtime / openspec** → [`agents/project-init/project-init-agent.md**](../../agents/project-init/project-init-agent.md) "配置文件输出结构"章节
+- **plugin_availability** → [`agents/plugin-init/plugin-init-agent.md**](../../agents/plugin-init/plugin-init-agent.md) "配置文件输出结构"章节
+- **model_routing** → 模型路由配置，详见 [`problem-10-model-routing.md**](../../usage-feedback%20/0521/tech-designs/problem-10-model-routing.md)
+
+## 模型路由说明
+
+### 配置说明
+
+在 `.mrd-to-code-config.json` 中新增 `model_routing` 节，支持按能力类别路由到不同模型：
+
+- **enabled**: 是否启用模型路由（默认 false，单模型模式）
+- **baseline_model**: 单模型模式下使用的模型
+- **category_models**: 各类别模型列表（deep/quick/writing/default）
+- **stage_overrides**: 特定 Stage 的类别覆盖
+- **risk_escalation**: 风险驱动的自动升级配置
+
+### 使用模型解析
+
+使用 `.workflow/scripts/model-resolver.js 解析模型：
+
+```bash
+# 解析 Stage 02-tech-design 的模型
+node .workflow/scripts/model-resolver.js resolve 02-tech-design
+
+# 检查是否为单模型模式
+node .workflow/scripts/model-resolver.js check-baseline
+
+# 显示单模型提醒（关键 Stage）
+node .workflow/scripts/model-resolver.js show-reminder 02-tech-design
+
+# 记录模型使用
+node .workflow/scripts/model-resolver.js log 02-tech-design claude-opus-4 deep
+```
+
+### 单模型兼容
+
+当 `model_routing.enabled=false` 或未配置时，自动退化为单模型模式，流程不中断。
+
+---
+
+## 三层配置加载机制
+
+dev-workflow 支持**组织级（org）→ 项目集级（workspace）→ 项目级（project）**三层配置继承。
+
+### 层级定义
+
+| 层级 | 路径 | 职责 | 维护方 |
+|------|------|------|--------|
+| org | `~/.config/mrd-to-code/org-config.json` 或 `{org-repo}/.mrd-to-code-org.json` | 全组织共享的规范（代码风格、安全检查规则、禁用的 LLM 模型） | 基础设施团队 |
+| workspace | `{monorepo-root}/.mrd-to-code-workspace.json` | 同一 monorepo 内共享的配置（公共依赖版本、共享知识库路径） | 技术负责人 |
+| project | `{project-dir}/.mrd-to-code-config.json` | 单项目专属配置（tech_stack、test_framework、openspec 阈值） | 各项目开发者 |
+
+### 配置合并规则
+
+```
+合并优先级: project > workspace > org
+
+规则:
+1. project 中未声明的字段，从 workspace 继承。
+2. workspace 中未声明的字段，从 org 继承。
+3. project 可通过 "override": true 显式声明覆盖，提高可读性。
+4. org 中标记为 "locked": true 的字段，不允许被低层覆盖。
+```
+
+### 配置加载脚本
+
+运行以下命令解析并合并三层配置：
+
+```bash
+node .workflow/scripts/config-resolver.js
+```
+
+合并后的配置写入 `.workflow/resolved-config.json`，包含 `__meta.source_tracking` 字段记录每个配置值的来源层级。
+
+### 按层级升级配置
+
+使用 `mrd-upgrade` 命令按层级更新配置：
+
+```bash
+# 只升级组织级配置（统一推送）
+node .workflow/scripts/mrd-upgrade.js --layer org --version 2.0
+
+# 升级项目集级配置
+node .workflow/scripts/mrd-upgrade.js --layer workspace
+
+# 升级项目级（需人工确认，避免覆盖自定义）
+node .workflow/scripts/mrd-upgrade.js --layer project --interactive
+
+# 升级所有层级
+node .workflow/scripts/mrd-upgrade.js --all
+```
+
+升级时按层级分别处理，低层配置不受影响。
+
+### 模板文件
+
+- `skills/00-init/assets/org-config-template.json` — org 层配置模板
+- `skills/00-init/assets/workspace-config-template.json` — workspace 层配置模板
+- `skills/00-init/assets/config-template.json` — project 层配置模板（含 `layer: "project"` 字段）
 

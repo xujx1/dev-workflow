@@ -38,9 +38,128 @@ MRD 地址
 
 ---
 
+## 多业务系统扩展性支持
+
+### 项目 Profile 机制
+
+每个业务系统根目录下的 `.mrd-to-code-config.json` 声明该系统的技术栈与规范：
+
+```json
+{
+  "project": {
+    "name": "order-service",
+    "tech_stack": "java-spring-boot",
+    "test_framework": "junit5+mockito",
+    "package_manager": "maven",
+    "directory_convention": "layered"
+  },
+  "knowledge_base": {
+    "root": "knowledge-base/",
+    "context_file": "knowledge-base/CONTEXT.md"
+  },
+  "code_gen": {
+    "template_set": "java-spring-boot-v2",
+    "mock_strategy": "mock-first"
+  }
+}
+```
+
+### 支持的 tech_stack 枚举值
+
+| tech_stack | 说明 | 默认模板集 |
+| --- | --- | --- |
+| `java-spring-boot` | Java + Spring Boot + Maven/Gradle | `java-spring-boot-v2` |
+| `nodejs-express` | Node.js + Express + npm | `nodejs-express-v1` |
+| `python-fastapi` | Python + FastAPI + pip | `python-fastapi-v1` |
+| `kotlin-ktor` | Kotlin + Ktor + Gradle | `java-spring-boot-v2` |
+
+### 代码生成策略路由
+
+Stage 3 代码生成阶段根据 `tech_stack` 路由到对应的 Agent 和模板：
+
+| tech_stack | 实现 Agent | 生成策略 |
+|------------|-----------|----------|
+| `java-spring-boot` | `java-impl-agent` | Controller/Service/Repository 分层 |
+| `nodejs-express` | `nodejs-impl-agent` | router/service/model 分层 |
+| `python-fastapi` | `python-impl-agent` | router/service/schema 分层 |
+| `kotlin-ktor` | `java-impl-agent` | Controller/Service/Repository 分层 |
+
+### 规范继承层级
+
+```
+组织级规范（.workflow/org-standards/）
+    ↓ 继承
+项目集规范（repo-root/.workflow/standards/）
+    ↓ 继承，允许覆盖
+单系统规范（service-dir/.mrd-to-code-config.json）
+```
+
+低层级规范可覆盖高层级规范的特定字段，不声明则继承。
+
+### 多系统知识库隔离
+
+**Monorepo 场景**（多系统在同一 repo）：
+
+```
+repo-root/
+├── order-service/
+│   ├── .mrd-to-code-config.json
+│   └── knowledge-base/
+│       ├── CONTEXT.md
+│       └── domain/
+├── payment-service/
+│   ├── .mrd-to-code-config.json
+│   └── knowledge-base/
+│       ├── CONTEXT.md
+│       └── domain/
+└── .workflow/               # 共享 Orchestrator 配置
+    └── templates/           # 共享模板集
+```
+
+每个子系统独立读取自己的 `knowledge-base/` 目录，避免跨系统污染。
+
+**独立 Repo 场景**：每个系统有自己的完整 Harness 安装，知识库天然隔离。
+
+### 跨系统接口依赖
+
+当业务系统 A 的技术方案依赖业务系统 B 的接口时，在 A 的技术方案中显式声明依赖：
+
+```yaml
+dependencies:
+  - service: "payment-service"
+    interface: "PaymentGateway.charge"
+    contract_ref: "payment-service/knowledge-base/domain/payment/api-contract.md"
+    mock_strategy: "mock-first"
+```
+
+代码生成阶段检测到跨系统依赖后，自动读取 `contract_ref` 文件，生成对应 mock 接口。
+
+---
+
 ## 前置准备（每次启动自动执行）
 
-### E-0. 统一环境前置检查
+### E-0. Doctor 预检（pre-stage 轻量检查）
+
+每个 Stage 启动前自动执行 Doctor 预检，检查配置文件、执行状态、关键产物等：
+
+```bash
+node .workflow/scripts/doctor-check.js --stage {current_stage} --json
+```
+
+| 检查项 | 分类 | 异常处理 |
+|--------|------|---------|
+| `.mrd-to-code-config.json` 是否存在且合法 | config | block |
+| `execution-state.md` 格式是否合法 | state | autofix + warn |
+| 关键产物是否存在（按当前 Stage 判断） | artifact | warn / block |
+| 关键目录是否存在 | config | autofix_done |
+
+检查输出状态：
+- `pass`：静默继续
+- `warn`：输出简短提示，继续执行
+- `block`：输出提示，阻断流程等待用户修复
+- `autofix_done`：输出"已自动修复"说明，继续执行
+
+### E-0.5. 统一环境前置检查
 
 在进入 Stage 1 / Stage 2 / Stage 3 之前，统一执行：
 
@@ -116,6 +235,8 @@ MRD 地址
 | `stop_after` | 执行到指定阶段后停止（`prd`/`tech`/`code`） | 否 |
 | `enable_mrd_clarify` | 是否执行 Stage 0，默认 true | 否 |
 | `auto_proceed` | Stage 间确认门是否自动通过，默认 true | 否 |
+| `force_openspec` | 强制触发 OpenSpec（无视规则判断） | 否 |
+| `skip_openspec` | 强制跳过 OpenSpec（无视规则判断） | 否 |
 
 `feature_dir` 推导规则（按优先级）：用户显式传入 → 当前分支名推导 → MRD 标题推导 kebab-case
 
@@ -179,6 +300,31 @@ OpenSpec：{启用（阈值≥{openspec_threshold}人日） | 禁用}
 
 - 子代理 prompt 构造规则 → `docs/orchestration/task-prompt-rules.md`
 - 各 Stage 详细调度（Stage 0/1+2/2.5 Step/Task 调度、确认门内容） → `docs/orchestration/stage-dispatch.md`
+
+### 复杂度档位路由
+
+Orchestrator 在以下节点读取 `execution-state.md` 中的 `complexity.level`，根据档位决定流程执行路径：
+
+| 流程节点 | nano | lite | full |
+|---------|------|------|------|
+| 知识库梳理（01） | 跳过 | 执行 | 执行 |
+| MRD 澄清 / PRD | 跳过（tech-only） | 执行 | 执行 |
+| 技术方案 | 简化版 | 标准版 | 完整版 |
+| Stage 2.5（OpenSpec） | 跳过 | 按触发规则决定 | 强制执行 |
+| Stage 3（代码生成 + TDD） | 执行 | 执行 | 执行 |
+| Stage 3（GitNexus） | 跳过 | 可选 | 强制 |
+| Stage 4（归档） | 轻量归档 | 标准归档 | 完整归档（含需求报告） |
+
+### 档位升降级处理
+
+**升级（宽松）**：
+- 执行中发现风险比技术方案判断高（如发现跨应用依赖、高风险字段），可自动或由 Agent 提示后升级。
+- 升级后追加对应流程节点（如触发 OpenSpec、启用 GitNexus）。
+- 更新 `execution-state.md` 中 `complexity.level` 字段。
+
+**降级（严格）**：
+- 降级必须人工确认，不允许自动降级。
+- 降级时 Agent 输出降级依据和潜在风险，等待用户确认后执行。
 
 ---
 

@@ -15,3 +15,7 @@
 *.db
 .beads-credential-key
 /.beads/
+/docs/INTERVIEW_QUESTIONS.md
+/docs/INTERVIEW_ANSWERS.md
+.gstack/
+/.workflow/tests/node_modules/

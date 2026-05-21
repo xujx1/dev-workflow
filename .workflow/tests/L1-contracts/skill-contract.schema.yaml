@@ -1,0 +1,140 @@
+# Skill Contract Schema
+# 每个 Skill 必须满足以下契约约束
+
+version: "1.0"
+
+# 核心 Skill 列表（第一阶段覆盖）
+core_skills:
+  - 00-init
+  - 01-knowledge-base
+  - 02-implementation-plan
+  - 03-code-gen-tdd
+  - 04-archive
+
+# 契约字段定义
+contract_fields:
+  required_frontmatter:
+    - name          # Skill 名称，必须与目录名一致
+    - version       # 版本号，格式 vX.Y.Z
+    - description   # 描述，必须包含触发词
+    - user-invocable # 是否可被用户直接调用
+
+  required_sections:
+    - "# .*"        # 必须以 # 开头的标题
+
+  optional_sections:
+    - 协同模型        # 协同模型/执行流程
+    - 产出          # 产出文件列表
+    - 输入参数       # 输入参数表
+    - Beads         # Beads 任务追踪集成
+    - 资产文件       # 资产文件引用
+
+  forbidden_operations:
+    - "^##.*产物.*$"  # 禁止在正文直接描述产物内容（应由 Agent 生成）
+    - "autofix"      # 禁止在 Skill 层声明 autofix 行为（应在 Phase 定义中）
+
+# 各 Skill 特定约束
+skill_constraints:
+  "00-init":
+    must_have_agents:
+      - project-init
+      - plugin-init
+    required_outputs:
+      - ".mrd-to-code-config.json"
+    state_update_fields:
+      - env_confirmed
+      - plugin_availability
+    downstream_dependencies:
+      - "01-knowledge-base"  # 依赖 env_confirmed=true
+
+  "01-knowledge-base":
+    must_have_agents:
+      - app-knowledge-agent
+    required_outputs:
+      - "app-knowledge-base/CONTEXT.md"
+      - "app-knowledge-base/KB_INDEX.md"
+      - "app-knowledge-base/KB_FRESHNESS.md"
+    mode_support:
+      - nano
+      - lite
+    state_update_fields:
+      - kb_generation_status
+      - kb_freshness
+
+  "02-implementation-plan":
+    must_have_agents:
+      - mrd-reader-agent
+      - mrd-clarify-agent
+      - prd-generator-agent
+      - tech-design-agent
+    must_have_assets:
+      - assets/prd-template.md
+      - assets/prd-validation-checks.md
+      - assets/tech-design-template.md
+    must_reference:
+      - validate-stage02-gates.js
+      - assets/prd-template.md
+      - assets/prd-validation-checks.md
+      - assets/tech-design-template.md
+      - feishu_readback
+    required_outputs:
+      - "{feature_dir}/mrd-original.md"
+      - "{feature_dir}/mrd-clarified.md"
+      - "{feature_dir}/prd.md"
+      - "{feature_dir}/tech-design.md"
+      - "{feature_dir}/execution-state.md"
+    state_update_fields:
+      - prd_status
+      - tech_design_status
+      - stage1_completed
+
+  "03-code-gen-tdd":
+    required_phases:
+      - phase1  # 测试规格
+      - phase2  # 实现代码
+      - phase3  # Code Review
+      - phase4  # 测试代码生成
+      - phase5  # 测试执行与覆盖率
+      - phase6  # 汇总结果
+    required_outputs:
+      - "{feature_dir}/test_spec.md"
+      - "{feature_dir}/execution-state.md"
+    state_update_fields:
+      - last_completed_phase
+      - next_phase
+      - phase_gate_status
+      - coverage_retry_count
+    forbidden_operations:
+      - "禁止在 Orchestrator 内直接生成产物"  # 必须由专职 Agent 完成
+
+  "04-archive":
+    required_steps:
+      - Step-4-init
+      - Step-4-0.5  # 锁定归档代码快照（最先执行）
+      - Step-4-2    # 知识库更新
+      - Step-4-3-4  # 生成归档报告
+    required_outputs:
+      - "{feature_dir}/archive-report.md"
+    state_update_fields:
+      - archive_status
+      - archive_commit_hash
+      - kb_updated
+
+# 执行约束
+execution_constraints:
+  max_phase_jump: 1  # 禁止跳跃超过 1 个 Phase
+  blocking_steps_must_wait: true  # 严格阻塞执行
+  prompt_size_limit_chars: 5000  # Task prompt 最大字符数（防止 "Prompt is too long"）
+
+# 状态协议约束
+state_protocol:
+  execution_state_fields:
+    - current_stage
+    - last_completed_phase
+    - next_phase
+    - awaiting_user_confirmation_for
+    - phase_gate_status
+
+  forbidden_state_values:
+    last_completed_phase:
+      - "phase5"  # phase5 完成后不能直接跳 phase1

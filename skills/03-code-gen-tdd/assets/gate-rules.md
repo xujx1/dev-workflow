@@ -106,9 +106,11 @@ pathlib.Path(state_file).write_text(content, encoding='utf-8')
 
 | 节点 | 默认行为 |
 |------|---------|
-| Phase 0→1 | 执行后**停下，等用户确认** |
-| Phase 1 确认后 → Phase 1.5 | 条件检查（openspec.initialized=true 且 openspec_change_path 为空时执行）；静默完成后**自动进入 Phase 2** |
-| Phase 1.5 → Phase 2 | 执行 Phase 2，**停下汇报**，提示 `/compact` |
+| Phase 0→0.5 | 执行技术栈检测与 OpenSpec 初始化检测 |
+| Phase 0.5→1 | 执行后**停下，等用户确认** |
+| Phase 1 确认后 → Phase 1.5 | 条件检查（openspec.initialized=true 且 openspec_change_path 为空时执行）；静默完成后**自动进入 Phase 1.6** |
+| Phase 1.5 → Phase 1.6 | 若 openspec_change_path 非空且 tasks.md 存在，则执行 OpenSpec apply；否则静默跳过 |
+| Phase 1.6 → Phase 2 | 执行 Phase 2，**停下汇报**，提示 `/compact` |
 | Phase 2→3 | 可连续执行（最多 2 个 Phase） |
 | Phase 3→4 | **停下汇报**，提示 `/compact` |
 | Phase 4→5 | **停下汇报**，提示 `/compact` |

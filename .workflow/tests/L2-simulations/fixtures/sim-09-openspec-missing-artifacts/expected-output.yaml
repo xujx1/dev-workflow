@@ -1,0 +1,7 @@
+simulation_id: SIM_09
+description: OpenSpec 已触发但 artifacts 缺失时必须阻断
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "OpenSpec 已触发"

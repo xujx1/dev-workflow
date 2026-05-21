@@ -1,0 +1,9 @@
+# SIM_08 预期行为
+
+simulation_id: SIM_08
+description: PRD 缺少生成元数据尾注时必须阻断确认门
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "生成元数据尾注"

@@ -1,0 +1,33 @@
+# SIM_05 预期行为
+
+simulation_id: SIM_05
+description: reconcile 发现 Beads 任务已关闭但 execution-state 显示 in-progress，reconcile 报告生成 warn
+
+## 输入状态
+- beads_state.phase4.status: "done"
+- execution_state_recorded.phase4.status: "in_progress"
+- reconcile_result.inconsistencies: 1
+
+## 预期行为
+orchestrator_action: generate_reconcile_report
+should_warn: true
+warn_message_contains: "状态不一致"
+should_prompt_manual_confirmation: true
+
+## 验证点
+verify:
+  - reconcile_detects_mismatch: true
+  - warn_generated: true
+  - manual_confirmation_requested: true
+  - execution_state_not_auto_corrected: true
+
+## 预期输出
+expected_output:
+  status: reconcile_warning
+  inconsistencies: 1
+  warn_message: "[WARN] Beads 与 Execution State 状态不一致，请人工确认"
+  details:
+    - task_id: "bd-12345"
+      beads: "done"
+      execution_state: "in_progress"
+  action_required: "人工确认后选择：1) 更新 execution-state 2) 重新打开 Beads task"

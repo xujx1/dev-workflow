@@ -1,0 +1,28 @@
+# SIM_04 预期行为
+
+simulation_id: SIM_04
+description: model_routing 未配置时，退化为 baseline 单模型，输出一次 warn
+
+## 输入状态
+- model_routing.configured: false
+- baseline_model: "claude-sonnet-4-20250514"
+
+## 预期行为
+orchestrator_action: degrade_to_baseline
+degraded_model: "claude-sonnet-4-20250514"
+should_output_warn: true
+warn_message_contains: "model_routing 未配置，使用 baseline 模型"
+
+## 验证点
+verify:
+  - model_degradation_occurs: true
+  - warn_logged: true
+  - phase2_uses_baseline_model: true
+  - no_error_thrown: true
+
+## 预期输出
+expected_output:
+  status: degraded
+  degraded_to: "claude-sonnet-4-20250514"
+  warn_log: "[WARN] model_routing 未配置，自动退化为 baseline 模型: claude-sonnet-4-20250514"
+  phase2_model: "claude-sonnet-4-20250514"

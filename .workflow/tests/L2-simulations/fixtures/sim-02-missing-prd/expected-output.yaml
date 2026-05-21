@@ -1,0 +1,27 @@
+# SIM_02 预期行为
+
+simulation_id: SIM_02
+description: execution-state 显示 Stage 02 完成，但 PRD 产物缺失时，pre-stage doctor 返回 block
+
+## 输入状态
+- current_stage: stage03
+- last_completed_phase: phase2
+- stage02.artifacts.prd.md: exists=false
+
+## 预期行为
+orchestrator_action: block
+block_reason: "stage02 artifact missing: prd.md"
+should_prompt_recovery: true
+
+## 验证点
+verify:
+  - pre_stage_doctor_detects_missing: true
+  - orchestrator_blocks: true
+  - error_message_indicates_missing_artifacts: true
+  - recovery_prompt_shown: true
+
+## 预期输出
+expected_output:
+  status: blocked
+  block_reason: "PRD 产物缺失，请重新执行 Stage 02"
+  recovery_action: "re-run stage02 or restore artifact"

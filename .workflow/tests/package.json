@@ -1,0 +1,13 @@
+{
+  "name": "dev-workflow-tests",
+  "version": "1.0.0",
+  "description": "Harness 自身回归测试",
+  "scripts": {
+    "test:L1": "node L1-contracts/check-contracts.js",
+    "test:L2": "node L2-simulations/run-simulations.js",
+    "test:all": "npm run test:L1 && npm run test:L2"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

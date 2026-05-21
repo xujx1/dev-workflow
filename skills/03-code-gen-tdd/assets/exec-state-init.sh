@@ -43,6 +43,12 @@ if p.exists():
         context_fields_needed.append(f'| test_mode | {test_mode} |')
     if 'openspec_change_path' not in c:
         context_fields_needed.append(f'| openspec_change_path | {openspec_change_path or \"—\"} |')
+    if 'reconcile_status' not in c:
+        context_fields_needed.append('| reconcile_status | — |')
+    if 'last_reconcile_at' not in c:
+        context_fields_needed.append('| last_reconcile_at | — |')
+    if 'reconcile_report_path' not in c:
+        context_fields_needed.append('| reconcile_report_path | — |')
     if context_fields_needed:
         # 找到上下文表的末尾（最后一个 | 行之后、第一个 --- 之前）并插入
         ctx_block = '\n'.join(context_fields_needed)
@@ -64,8 +70,10 @@ if p.exists():
 | Phase | 状态 | 产出路径 | 完成时间 | 消耗Token |
 |------|------|---------|---------|---------|
 | Phase 0 环境预检 | ⏳ 待执行 | — | — | — |
+| Phase 0.5 技术栈与OpenSpec初始化 | ⏳ 待执行 | — | — | — |
 | Phase 1 测试规格 | ⏳ 待执行 | — | — | — |
 | Phase 1.5 OpenSpec初始化 | ⏳ 条件执行 | — | — | — |
+| Phase 1.6 OpenSpec apply | ⏳ 条件执行 | — | — | — |
 | Phase 2 实现代码 | ⏳ 待执行 | — | — | — |
 | Phase 3 Code Review | ⏳ 待执行 | — | — | — |
 | Phase 4 测试代码生成 | ⏳ 待执行 | — | — | — |
@@ -84,6 +92,18 @@ if p.exists():
         )
         changed = True
 
+    process_fields_needed = []
+    for field in ['tech_stack', 'template_set', 'openspec_tasks_total', 'openspec_tasks_done', 'openspec_apply_status']:
+        if field not in c:
+            process_fields_needed.append(f'| {field} | — |')
+    if '## 过程数据' in c and process_fields_needed:
+        c = re.sub(
+            r'(## 过程数据\b.*?\n(?:\|.*\n)+)',
+            lambda m: m.group(0).rstrip() + '\n' + '\n'.join(process_fields_needed) + '\n',
+            c, count=1, flags=re.DOTALL
+        )
+        changed = True
+
     # ── 4. 追加过程数据节（若不存在）────────────────────────────────
     if '## 过程数据' not in c:
         proc_section = '''
@@ -95,6 +115,8 @@ if p.exists():
 |------|----|
 | last_completed_phase | phase0 |
 | next_phase | phase1 |
+| tech_stack | — |
+| template_set | — |
 | awaiting_user_confirmation_for | none |
 | phase_gate_status | — |
 | phase5_dod_met | false |
@@ -103,16 +125,40 @@ if p.exists():
 | review_result | — |
 | test_pass_rate | — |
 | coverage_rate | — |
+| openspec_tasks_total | — |
+| openspec_tasks_done | — |
+| openspec_apply_status | — |
 | skill_completion_status | in_progress |
 | dispatch_params | — |
+
+---
+
+## 自动修复状态（Autofix）
+
+| 字段 | 值 |
+|------|----|
+| autofix_enabled | true |
+| autofix_status | RUNNING |
+| autofix_attempts | 0 |
+| autofix_max_attempts | 3 |
+| autofix_last_fail_count | — |
+| autofix_regression_count | 0 |
+| autofix_stop_reason | — |
+| autofix_history_path | .workflow/autofix-history.md |
+| autofix_timeout_minutes | 5 |
+| autofix_min_pass_rate | 100 |
+| autofix_stop_on_regression | true |
+| autofix_stop_on_no_progress_rounds | 2 |
 '''
         c = c.rstrip() + proc_section
         changed = True
 
     # ── 5. 追加 Phase Checklist 条目（若 Execution Checklist 节已存在则追加；否则新建）──
     phase_checklist_items = '''- [ ] phase0-env-check
+- [ ] phase0.5-tech-stack
 - [ ] phase1-test-spec
 - [ ] phase1_5-openspec-init
+- [ ] phase1_6-openspec-apply
 - [ ] phase2-impl-code
 - [ ] phase3-code-review
 - [ ] phase4-test-code
@@ -165,6 +211,9 @@ else:
 | mode | {mode} |
 | test_mode | {test_mode} |
 | openspec_change_path | {openspec_change_path or \"—\"} |
+| reconcile_status | — |
+| last_reconcile_at | — |
+| reconcile_report_path | — |
 
 ---
 
@@ -173,8 +222,10 @@ else:
 | Phase | 状态 | 产出路径 | 完成时间 | 消耗Token |
 |------|------|---------|---------|---------|
 | Phase 0 环境预检 | ⏳ 待执行 | — | — | — |
+| Phase 0.5 技术栈与OpenSpec初始化 | ⏳ 待执行 | — | — | — |
 | Phase 1 测试规格 | ⏳ 待执行 | — | — | — |
 | Phase 1.5 OpenSpec初始化 | ⏳ 条件执行 | — | — | — |
+| Phase 1.6 OpenSpec apply | ⏳ 条件执行 | — | — | — |
 | Phase 2 实现代码 | ⏳ 待执行 | — | — | — |
 | Phase 3 Code Review | ⏳ 待执行 | — | — | — |
 | Phase 4 测试代码生成 | ⏳ 待执行 | — | — | — |
@@ -189,6 +240,8 @@ else:
 |------|----|
 | last_completed_phase | none |
 | next_phase | phase0 |
+| tech_stack | — |
+| template_set | — |
 | awaiting_user_confirmation_for | none |
 | phase_gate_status | — |
 | phase5_dod_met | false |
@@ -197,8 +250,30 @@ else:
 | review_result | — |
 | test_pass_rate | — |
 | coverage_rate | — |
+| openspec_tasks_total | — |
+| openspec_tasks_done | — |
+| openspec_apply_status | — |
 | skill_completion_status | in_progress |
 | dispatch_params | — |
+
+---
+
+## 自动修复状态（Autofix）
+
+| 字段 | 值 |
+|------|----|
+| autofix_enabled | true |
+| autofix_status | RUNNING |
+| autofix_attempts | 0 |
+| autofix_max_attempts | 3 |
+| autofix_last_fail_count | — |
+| autofix_regression_count | 0 |
+| autofix_stop_reason | — |
+| autofix_history_path | .workflow/autofix-history.md |
+| autofix_timeout_minutes | 5 |
+| autofix_min_pass_rate | 100 |
+| autofix_stop_on_regression | true |
+| autofix_stop_on_no_progress_rounds | 2 |
 
 ---
 
@@ -207,8 +282,10 @@ else:
 > **规则**：每个 Phase 完成后 orchestrator 立即更新对应条目。
 
 - [ ] phase0-env-check
+- [ ] phase0.5-tech-stack
 - [ ] phase1-test-spec
 - [ ] phase1_5-openspec-init
+- [ ] phase1_6-openspec-apply
 - [ ] phase2-impl-code
 - [ ] phase3-code-review
 - [ ] phase4-test-code

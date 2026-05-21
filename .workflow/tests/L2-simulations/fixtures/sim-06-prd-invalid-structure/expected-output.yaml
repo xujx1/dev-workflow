@@ -1,0 +1,9 @@
+# SIM_06 预期行为
+
+simulation_id: SIM_06
+description: PRD 章节结构不是模板一~七时必须阻断确认门
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "缺少 PRD 模板章节"

@@ -1,0 +1,7 @@
+simulation_id: SIM_13
+description: 插件不可用但未记录 fallback 时必须阻断
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "fallback"

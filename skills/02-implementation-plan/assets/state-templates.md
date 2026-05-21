@@ -57,10 +57,54 @@ if [ ! -f "{feature_dir}/execution-state.md" ]; then
 | prd_feishu_url | — |
 | tech_local_path | — |
 | tech_feishu_url | — |
+| feishu_readback | — |
 | tech_input_version | — |
 | last_completed_stage | none |
 | next_stage | mrd-clarify |
 | domain_config | — |
+| doctor_status | pass |
+| reconcile_status | — |
+| last_reconcile_at | — |
+| reconcile_report_path | — |
+
+---
+
+## 复杂度分级
+
+```yaml
+complexity:
+  level: lite                      # nano / lite / full
+  reasons:
+    - single_app_change
+    - estimated_days_1.5
+    - no_external_contract_change
+  risk_triggers: []
+  collaboration_scope: single_team
+  recommended_flow:
+    knowledge_base: true
+    openspec: optional             # true / optional / false
+    gitnexus: optional             # true / optional / false
+    archive: standard              # standard / full / skip
+```
+
+---
+
+## OpenSpec 触发决策
+
+```yaml
+openspec:
+  triggered: false                # true / false
+  trigger_rules: []               # 命中的规则列表
+  # trigger_rules 示例:
+  #   - rule_id: "RULE_01"
+  #     reason: "估算人日: 7，超过阈值: 5"
+  #   - rule_id: "RULE_02"
+  #     reason: "技术方案声明新增 API: POST /orders/batch"
+  skipped: false                  # true / false
+  skip_reason: null               # 跳过原因（当 skipped=true 时）
+  force_triggered: false          # true = 由 --force-openspec 触发
+  force_skipped: false            # true = 由 --skip-openspec 跳过
+```
 EOF
 fi
 ```
@@ -227,7 +271,7 @@ updates = {
     'tech_feishu_url': '{tech_feishu_url}',
     'tech_input_version': '{feishu-confirmed|local-confirmed|local-draft}',
     'last_completed_stage': 'stage2-tech-design',
-    'next_stage': 'code-gen',
+    'next_stage': 'none',
 }
 for k, v in updates.items():
     pattern = rf'(\| {re.escape(k)} +\| ).*?( \|)'
@@ -246,7 +290,6 @@ content = content.replace(
 )
 pathlib.Path(state_file).write_text(content, encoding='utf-8')
 print('Stage 2 state written')
-"
 ```
 
 **写入字段说明**：
@@ -254,7 +297,7 @@ print('Stage 2 state written')
 - `tech_feishu_url`：飞书 URL（如已上传）
 - `tech_input_version`：`feishu-confirmed` / `local-confirmed` / `local-draft`
 - `last_completed_stage` → `stage2-tech-design`
-- `next_stage` → `code-gen`
+- `next_stage` → `none`
 - checklist `step-2b-tech` → `[x]`
 
 ---
@@ -357,7 +400,7 @@ updates = {
     'tech_feishu_url': '{tech_feishu_url}',
     'tech_input_version': 'local-draft',
     'last_completed_stage': 'stage2-tech-design',
-    'next_stage': 'code-gen',
+    'next_stage': 'none',
 }
 for k, v in updates.items():
     pattern = rf'(\| {re.escape(k)} +\| ).*?( \|)'
@@ -376,7 +419,6 @@ content = content.replace(
 )
 pathlib.Path(state_file).write_text(content, encoding='utf-8')
 print('Stage 2 state written for {app_name}')
-"
 ```
 
 **写入字段说明**：
@@ -384,5 +426,5 @@ print('Stage 2 state written for {app_name}')
 - `tech_feishu_url`：本 app 独立的技术方案飞书 URL
 - `tech_input_version` → `local-draft`
 - `last_completed_stage` → `stage2-tech-design`
-- `next_stage` → `code-gen`
+- `next_stage` → `none`
 - checklist `step-2b-tech-{app_id}` → `[x]`

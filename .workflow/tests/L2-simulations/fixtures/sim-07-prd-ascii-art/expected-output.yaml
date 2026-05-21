@@ -1,0 +1,9 @@
+# SIM_07 预期行为
+
+simulation_id: SIM_07
+description: PRD 包含 ASCII art 时必须阻断确认门
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "ASCII art"

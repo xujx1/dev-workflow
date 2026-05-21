@@ -143,3 +143,99 @@ Phase 5 失败
 - Phase 2 结束后必须写入 **Phase 2 变更清单**（`{feature_dir}/state/change-manifest-phase2.md`），禁止只依赖临时 `git diff HEAD`
 - 命中摘要（`execution-state.md`「命中摘要（按环节）」）每 Phase 完成后立即更新；禁止留到归档阶段补
 - `last_completed_phase=phase4` 时，`next_phase` **必须**写 `phase5`（硬约束），禁止标注「可选」
+
+---
+
+## 七、自动修复（Autofix）停止条件
+
+> 本节定义自动修复循环的停止条件，用于 Phase 2 / Phase 4 / Phase 5 的修复闭环。
+
+### 7.1 成功停止条件
+
+满足任意一条则判定为成功，停止修复循环：
+
+| 条件 ID | 触发条件 |
+|---------|---------|
+| AUTO_SUCCESS_01 | 所有测试通过（exit code = 0） |
+| AUTO_SUCCESS_02 | 测试通过率达到 `autofix_min_pass_rate`（默认 100%） |
+
+### 7.2 失败停止条件
+
+满足任意一条则判定为失败，停止修复循环，等待人工介入：
+
+| 条件 ID | 触发条件 | 说明 |
+|---------|---------|------|
+| STOP_01 | `autofix_attempts >= autofix_max_attempts` | 达到最大尝试次数（默认 3） |
+| STOP_02 | 连续 N 轮失败数量未减少 | N = `autofix_stop_on_no_progress_rounds`（默认 2） |
+| STOP_03 | 修复后新增失败测试数 > 0 | Regression 检测，修复引入新问题 |
+| STOP_04 | 编译失败且连续 2 次未恢复 | 编译错误连续失败，无法进入测试 |
+| STOP_05 | 单次修复耗时 > timeout | 超时保护（默认 5 分钟） |
+
+### 7.3 状态机
+
+```
+初始状态: RUNNING
+
+RUNNING
+  → (AUTO_SUCCESS_01 或 AUTO_SUCCESS_02) → SUCCESS
+  → (STOP_01 触发) → FAILED_MAX_ATTEMPTS
+  → (STOP_02 触发) → FAILED_NO_PROGRESS
+  → (STOP_03 触发) → FAILED_REGRESSION
+  → (STOP_04 触发) → FAILED_COMPILE_ERROR
+  → (STOP_05 触发) → FAILED_TIMEOUT
+```
+
+### 7.4 修复尝试记录
+
+每次修复尝试后，在 `{feature_dir}/.workflow/autofix-history.md` 中追加记录：
+
+```markdown
+## 修复尝试 #3 (2026-05-21T10:30:00Z)
+
+- 失败测试: 3 个 (OrderServiceTest, PaymentServiceTest, ...)
+- 修复操作: 修改 OrderService.calculateDiscount 的边界条件判断
+- 修复结果: 失败测试 → 2 个（减少 1 个）
+- 新增失败: 0 个
+- 状态: RUNNING（继续）
+```
+
+### 7.5 人工介入提示格式
+
+触发失败停止条件后，输出以下结构化提示：
+
+```
+[AUTOFIX STOPPED] 原因: STOP_03 - 修复引入 1 个新的失败测试
+
+失败的测试:
+  - 修复前存在: OrderServiceTest.testDiscount (仍然失败)
+  - 修复后新增: PaymentServiceTest.testRefund (regression)
+
+建议操作:
+  1. 查看修复历史: cat .workflow/autofix-history.md
+  2. 手动回退最后一次修复: git diff HEAD~1
+  3. 或调整测试预期: 如果测试逻辑本身有误
+
+继续执行前请手动确认: $BD_BIN resume --after-manual-fix
+```
+
+### 7.6 状态更新脚本
+
+```python
+# 修复尝试完成后更新 execution-state.md
+import re, pathlib
+
+def update_autofix_state(state_file, attempts, last_fail_count, regression_count, status, stop_reason=None):
+    c = pathlib.Path(state_file).read_text(encoding='utf-8')
+    updates = [
+        ('autofix_attempts', str(attempts)),
+        ('autofix_last_fail_count', str(last_fail_count)),
+        ('autofix_regression_count', str(regression_count)),
+        ('autofix_status', status),
+    ]
+    if stop_reason:
+        updates.append(('autofix_stop_reason', stop_reason))
+
+    for k, v in updates:
+        c = re.sub(rf'(\| {re.escape(k)} +\| ).*?( \|)', rf'\g<1>{v}\2', c)
+    pathlib.Path(state_file).write_text(c, encoding='utf-8')
+```

@@ -88,6 +88,14 @@ openspec status --change "{change_name}" --json
 2. 根据任务类型读 ≤1 个 L1 文档（任务路由见 `知识库注入计划` 中 L1 条件读映射）
 3. 同一会话内已读文档不重复读取
 
+### Profile 加载规则
+
+加载顺序：
+1. `.workflow/profiles/style-profile.md`（代码风格和惯用写法）
+2. `.workflow/profiles/business-profile.md`（业务特性和高风险链路）
+
+若文件不存在 → 输出 warn 提示，跳过加载，继续执行。
+
 ### Stage 3 对接时的上下文加载
 
 由 Stage 3 调用时，以下上下文由 orchestrator 传入，无需重复读取：

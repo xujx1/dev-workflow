@@ -1,4 +1,23 @@
 {
+  "version": "1.0",
+  "layer": "project",
+  "_description": "项目级配置，单项目专属配置，可继承上层（workspace/org）的配置",
+  "_maintainer": "各项目开发者",
+  "project": {
+    "name": "your-project",
+    "tech_stack": "java-spring-boot",
+    "test_framework": "junit5+mockito",
+    "package_manager": "maven",
+    "directory_convention": "layered"
+  },
+  "knowledge_base": {
+    "root": "knowledge-base/",
+    "context_file": "knowledge-base/CONTEXT.md"
+  },
+  "code_gen": {
+    "template_set": "java-spring-boot-v2",
+    "mock_strategy": "mock-first"
+  },
   "env": {
     "repo_path": "/path/to/your-project",
     "java": {
@@ -69,5 +88,35 @@
       "database": "YOUR_PROJECT_DB_NAME",
       "issue_prefix": "your-project-name"
     }
+  },
+  "model_routing": {
+    "enabled": false,
+    "baseline_model": "claude-sonnet-4",
+    "category_models": {
+      "deep": ["claude-opus-4", "claude-sonnet-4"],
+      "quick": ["claude-haiku-4", "claude-sonnet-4"],
+      "writing": ["claude-sonnet-4"],
+      "default": ["claude-sonnet-4"]
+    },
+    "stage_overrides": {
+      "02-tech-design": {
+        "category": "deep"
+      },
+      "04-archive": {
+        "category": "writing"
+      }
+    },
+    "risk_escalation": {
+      "enabled": true,
+      "triggers": ["cross_domain", "high_risk_chain", "consecutive_failures", "review_block_count>=2"],
+      "escalate_to": "deep"
+    }
+  },
+  "autofix": {
+    "max_attempts": 3,
+    "timeout_minutes": 5,
+    "min_pass_rate": 100,
+    "stop_on_regression": true,
+    "stop_on_no_progress_rounds": 2
   }
 }

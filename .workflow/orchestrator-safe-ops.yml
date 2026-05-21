@@ -1,0 +1,66 @@
+# Orchestrator 安全微操作白名单配置
+# 允许 Orchestrator 执行的可机械执行、低风险、可审计的基础设施动作
+
+safe_ops:
+  - id: ensure_dir
+    description: "创建缺失目录"
+    allowed_paths:
+      - "artifacts/"
+      - "output/"
+      - ".workflow/"
+      - "req/"
+      - "target/"
+    audit: true
+
+  - id: fix_execution_state
+    description: "修复 execution-state.md 缺失字段"
+    allowed_fields:
+      - "current_phase"
+      - "artifact_paths"
+      - "started_at"
+      - "last_updated_at"
+      - "status"
+      - "error_message"
+    disallowed_fields:
+      - "review_conclusion"
+      - "test_result"
+      - "code_changes"
+      - "implementation_details"
+    audit: true
+
+  - id: validate_artifacts
+    description: "校验关键产物存在性"
+    check_only: true
+    audit: false
+    required_artifacts:
+      - pattern: "**/execution-state.md"
+        required: true
+      - pattern: "**/*.md"
+        required: false
+        min_size: 10
+
+  - id: reconcile_report
+    description: "生成 reconcile 差异报告（只读）"
+    output: ".workflow/reconcile-report.md"
+    audit: true
+    sources:
+      - ".workflow/execution-state.md"
+      - ".beads/tasks.json"
+      - "git diff --stat"
+
+# 明确禁止的操作清单（Orchestrator 不得触及）
+prohibited_ops:
+  - generate_business_code
+  - generate_test_code
+  - generate_prd
+  - generate_tech_design
+  - generate_openspec
+  - write_code_review
+  - update_beads_task_status
+  - modify_knowledge_base
+
+# 审计日志配置
+audit:
+  log_file: ".workflow/ops-audit.log"
+  format: "jsonl"
+  retention: "append_only"

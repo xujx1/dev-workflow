@@ -1,0 +1,25 @@
+artifact_contract:
+  name: nodejs-express-v1
+  tech_stack: nodejs-express
+  test_framework: jest+supertest
+  package_manager: npm
+  
+  required_files:
+    - src/router/*.js
+    - src/controller/*.js
+    - src/service/*.js
+    - src/model/*.js
+    
+  test_files:
+    - test/router/*.test.js
+    - test/service/*.test.js
+    - test/controller/*.test.js
+    
+  optional_files:
+    - src/middleware/*.js
+    - src/config/*.js
+    - src/utils/*.js
+    
+  output_format:
+    type: directory
+    root: src/

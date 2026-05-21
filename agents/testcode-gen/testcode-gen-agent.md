@@ -70,6 +70,12 @@ description: 窄职责测试代码生成 Agent。只保留 P0 能力：基于 `t
 ### L2 禁止读
 - 禁止 Read ≥2 个知识库详细文档
 
+## Profile 加载规则
+
+加载 `.workflow/profiles/style-profile.md` 中的**测试习惯**部分（命名、组织、Mock 规则）。
+
+若文件不存在 → 输出 warn 提示，跳过加载，继续执行。
+
 ## 返回规范
 
 > 遵循 `rules/common/agents.md` 中的「Agent 返回格式规范（P0 Token 优化硬约束）」。

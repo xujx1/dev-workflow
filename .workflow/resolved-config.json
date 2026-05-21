@@ -1,0 +1,51 @@
+{
+  "model_routing": {
+    "enabled": true,
+    "baseline_model": "claude-sonnet-4",
+    "category_models": {
+      "deep": [
+        "claude-opus-4",
+        "claude-sonnet-4"
+      ],
+      "quick": [
+        "claude-haiku-4",
+        "claude-sonnet-4"
+      ],
+      "writing": [
+        "claude-sonnet-4"
+      ],
+      "default": [
+        "claude-sonnet-4"
+      ]
+    },
+    "stage_overrides": {
+      "02-tech-design": {
+        "category": "deep"
+      },
+      "04-archive": {
+        "category": "writing"
+      }
+    },
+    "risk_escalation": {
+      "enabled": true,
+      "triggers": [
+        "cross_domain",
+        "high_risk_chain",
+        "consecutive_failures",
+        "review_block_count>=2"
+      ],
+      "escalate_to": "deep"
+    }
+  },
+  "__meta": {
+    "resolved_at": "2026-05-21T05:16:29.560Z",
+    "layers": {
+      "org": null,
+      "workspace": null,
+      "project": "/Users/admin/trae/dev-workflow/.mrd-to-code-config.json"
+    },
+    "source_tracking": {
+      "model_routing": "project"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+artifact_contract:
+  name: java-spring-boot-v2
+  tech_stack: java-spring-boot
+  test_framework: junit5+mockito
+  package_manager: maven
+  
+  required_files:
+    - src/main/java/**/controller/*Controller.java
+    - src/main/java/**/service/*Service.java
+    - src/main/java/**/repository/*Repository.java
+    - src/main/java/**/entity/*.java
+    - src/main/java/**/dto/*.java
+    
+  test_files:
+    - src/test/java/**/controller/*ControllerTest.java
+    - src/test/java/**/service/*ServiceTest.java
+    - src/test/java/**/repository/*RepositoryTest.java
+    
+  optional_files:
+    - src/main/java/**/config/*.java
+    - src/main/java/**/exception/*.java
+    
+  output_format:
+    type: directory
+    root: src/

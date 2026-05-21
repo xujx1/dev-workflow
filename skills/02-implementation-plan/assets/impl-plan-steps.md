@@ -16,12 +16,6 @@
 {
   "plugin_availability": {
   },
-  "openspec": {
-    "enabled": true,
-    "threshold_person_days": 5,
-    "generate_stage": "before_code_gen",
-    "archive_in_stage4": true
-  },
   "test_runtime": {
     "enabled": true,
     "mode": "mock-first"
@@ -37,15 +31,6 @@
 |--------|---------|
 | `l2_gitnexus=available`（`gitnexus.mcp_available=true AND knowledge_graph≠null`） | 技术方案生成后自动调用 `gitnexus_impact` 生成附录II（变更影响分析） |
 | `l3_autoresearch=available` | 技术方案生成后自动追加附录III（场景扩展）+ 附录IV（多视角架构分析） |
-| `beads.installed=true` | Step -1 完成后立即执行 Beads 任务初始化（见 SKILL.md Beads 章节） |
-
-若 `beads.installed=true`，Step -1 完成后**强制执行**：
-
-```bash
-$BD_BIN create "{feature_name} PRD生成" --type task   # 记录 id 为 prd_task_id
-$BD_BIN create "{feature_name} 技术方案生成" --type task  # 记录 id 为 tech_task_id
-$BD_BIN dep add <tech_task_id> <prd_task_id> --type blocks
-```
 
 ### Step 0: 知识库完整性检测
 
@@ -118,25 +103,10 @@ feature_name: {feature_name}
   - 上传成功后执行 checklist 勾选（见 `assets/state-templates.md` Stage 1 节）
   - 勾选完成后并行A 才算完成
 
-#### 并行 B: tech-design-agent → tech-design.md（经典模式）/ OpenSpec artifacts（OpenSpec 模式）
+#### 并行 B: tech-design-agent → tech-design.md
 
-**模式判断**（静默，基于 config）：
-- `plugin_availability.openspec.initialized=true` → OpenSpec 模式
-- 否则 → 经典模式
+传入参数：`prd_local_path`, `feature_dir`, `kb_local_path`, `config`（含 `l2_gitnexus` 状态）、`autoresearch_mode`（若 `l3_autoresearch=available` 则固定传 `fix`）
 
-传入参数：`prd_local_path`, `feature_dir`, `kb_local_path`, `config`（含 `openspec_enabled`、`repo_path`、`l2_gitnexus` 状态）、`autoresearch_mode`（若 `l3_autoresearch=available` 则固定传 `fix`）
-
-**OpenSpec 模式**：
-- 调用 `/opsx:new {feature_name} --schema java-tdd`
-- 调用 `/opsx:ff` 生成 proposal.md + specs/ + design.md + tasks.md + test_spec.md
-- 产物写入 `{repo_path}/openspec/changes/{feature_name}/`
-- 在 `{feature_dir}/` 创建 `OPENSPEC_LINK.md` 指向 openspec change 路径
-- 写入 `openspec_change_path` 到 `{feature_dir}/execution-state.md`
-- 飞书上传：上传 design.md；写入 `tech_feishu_url` 到 execution-state.md
-- 上传成功后执行 checklist 勾选（见 `assets/state-templates.md` Stage 2 节）
-- 勾选完成后并行B 才算完成
-
-**经典模式**：
 - 并行读取全部输入（强制，不得跳过）
 - 生成技术方案正文（含首版研发工时预估）
 - 附录I — 需求拆解（读取 `assets/req-split-guide.md`）
@@ -150,28 +120,6 @@ feature_name: {feature_name}
 ### 确认门
 
 展示双文档摘要，等待确认。格式详见 `assets/confirmation-gate.md`。
-
-### Step 3: openspec-verify-agent（OpenSpec 已初始化时触发）
-
-**触发条件**（静默判断）：`plugin_availability.openspec.initialized=true` 且 `openspec_change_path` 不为空（execution-state.md 中已写入）。
-
-调度 `agents/openspec/openspec-verify-agent.md`
-
-传入参数：
-- `openspec_change_path`：`{repo_path}/openspec/changes/{feature_name}/`
-- `repo_path`：业务工程根目录
-
-**verify_result 处理**：
-
-| verify_result | 动作 |
-|---------------|------|
-| PASS | 流程完成，输出验收通过摘要 |
-| PASS_WITH_WARNINGS | 输出警告摘要，流程完成 |
-| FAIL（tasks未完成） | 输出未完成任务清单，提示补充后重新运行 |
-| FAIL（BLOCKER） | 输出 BLOCKER 列表，提示修复后重新运行 03-code-gen-tdd |
-| FAIL（覆盖率不足） | 输出覆盖率诊断，提示进入 03-code-gen-tdd Phase 5 补充测试 |
-
-⚠️ openspec-verify-agent 不负责修复——仅诊断报告，由用户或后续流程决策处理。
 
 ---
 

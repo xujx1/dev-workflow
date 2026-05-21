@@ -1,0 +1,7 @@
+simulation_id: SIM_12
+description: 技术方案章节不符合模板时必须阻断
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "技术方案章节不符合模板"

@@ -1,0 +1,7 @@
+simulation_id: SIM_10
+description: Stage 02 缺少模型路由记录时必须阻断
+
+expected_output:
+  status: block
+  orchestrator_action: block
+  block_reason_contains: "模型路由"
